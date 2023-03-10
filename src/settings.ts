@@ -80,5 +80,15 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 					this.plugin.saveSettings();
 				});
 			});
+
+		new Setting(containerEl)
+			.setName('Reload the plugin')
+			.setDesc('Make sure that you reload the plugin if you changed YAML key or Date Format')
+			.addButton((button) => {
+				button.setButtonText('Reload Plugin');
+				button.onClick(() => {
+					this.plugin.reloadPlugin();
+				});
+			});
 	}
 }

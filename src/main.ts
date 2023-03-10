@@ -129,6 +129,13 @@ export default class OZCalendarPlugin extends Plugin {
 		);
 	};
 
+	reloadPlugin = () => {
+		// @ts-ignore
+		this.app.plugins.disablePlugin('oz-calendar');
+		// @ts-ignore
+		this.app.plugins.enablePlugin('oz-calendar');
+	};
+
 	getNotesWithDates = (): OZCalendarDaysMap => {
 		let mdFiles = this.app.vault.getMarkdownFiles();
 		let OZCalendarDays: OZCalendarDaysMap = {};
