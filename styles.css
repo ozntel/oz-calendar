@@ -114,6 +114,7 @@
 	vertical-align: top;
 	font-size: 1.1em;
 	color: var(--interactive-accent);
+	cursor: pointer;
 }
 
 .oz-calendar-nav-action-right {

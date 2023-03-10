@@ -10,12 +10,13 @@ import { TFile } from 'obsidian';
 interface NoteListComponentParams {
 	selectedDay: Date;
 	setSelectedDay: (selectedDay: Date) => void;
+	setActiveStartDate: (newActiveStartDate: Date) => void;
 	selectedDayNotes: string[];
 	plugin: OZCalendarPlugin;
 }
 
 export default function NoteListComponent(params: NoteListComponentParams) {
-	const { selectedDayNotes, setSelectedDay, selectedDay, plugin } = params;
+	const { selectedDayNotes, setSelectedDay, selectedDay, plugin, setActiveStartDate } = params;
 
 	const setNewSelectedDay = (nrChange: number) => {
 		let newDate = dayjs(selectedDay).add(nrChange, 'day');
@@ -50,7 +51,9 @@ export default function NoteListComponent(params: NoteListComponentParams) {
 				<div className="oz-calendar-nav-action-left">
 					<BsArrowLeft size={22} onClick={() => setNewSelectedDay(-1)} />
 				</div>
-				<div className="oz-calendar-nav-action-middle">{dayjs(selectedDay).format('DD MMM YYYY')}</div>
+				<div className="oz-calendar-nav-action-middle" onClick={() => setActiveStartDate(selectedDay)}>
+					{dayjs(selectedDay).format('DD MMM YYYY')}
+				</div>
 				<div className="oz-calendar-nav-action-right">
 					<BsArrowRight size={22} onClick={() => setNewSelectedDay(1)} />
 				</div>

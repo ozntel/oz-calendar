@@ -11,6 +11,9 @@ export default function MyCalendar(params: { plugin: OZCalendarPlugin }) {
 	const forceUpdate = useForceUpdate();
 	const [selectedDay, setSelectedDay] = useState<Date>(new Date());
 	const [selectedDayNotes, setSelectedDayNotes] = useState<string[]>([]);
+	const [activeStartDate, setActiveStartDate] = useState<Date>(new Date());
+
+	useEffect(() => setActiveStartDate(selectedDay), [selectedDay]);
 
 	useEffect(() => {
 		const selectedDayIso = dayjs(selectedDay).format('YYYY-MM-DD');
@@ -55,6 +58,18 @@ export default function MyCalendar(params: { plugin: OZCalendarPlugin }) {
 				minDetail="month"
 				view="month"
 				tileContent={customTileContent}
+				activeStartDate={activeStartDate}
+				onActiveStartDateChange={(props) => {
+					if (props.action === 'next') {
+						setActiveStartDate(dayjs(activeStartDate).add(1, 'month').toDate());
+					} else if (props.action === 'next2') {
+						setActiveStartDate(dayjs(activeStartDate).add(12, 'month').toDate());
+					} else if (props.action === 'prev') {
+						setActiveStartDate(dayjs(activeStartDate).add(-1, 'month').toDate());
+					} else if (props.action === 'prev2') {
+						setActiveStartDate(dayjs(activeStartDate).add(-12, 'month').toDate());
+					}
+				}}
 				formatMonthYear={(locale, date) => dayjs(date).format('MMM YYYY')}
 			/>
 			<>
@@ -62,6 +77,7 @@ export default function MyCalendar(params: { plugin: OZCalendarPlugin }) {
 				<NoteListComponent
 					selectedDay={selectedDay}
 					setSelectedDay={setSelectedDay}
+					setActiveStartDate={setActiveStartDate}
 					selectedDayNotes={selectedDayNotes}
 					plugin={plugin}
 				/>
