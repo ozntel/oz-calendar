@@ -1,8 +1,141 @@
-/*
+.oz-calendar-plugin-view .react-calendar button:enabled:hover {
+	cursor: pointer;
+}
 
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
+.oz-calendar-plugin-view .react-calendar__navigation {
+	display: flex;
+}
 
-If your plugin does not need CSS, delete this file.
+.oz-calendar-plugin-view .react-calendar__month-view__weekdays {
+	text-align: center;
+	text-transform: uppercase;
+	font-weight: bold;
+	font-size: 0.75em;
+}
 
-*/
+.oz-calendar-plugin-view .react-calendar__month-view__weekdays__weekday {
+	padding: 0.5em;
+}
+
+.oz-calendar-plugin-view .react-calendar__month-view__weekdays__weekday abbr {
+	text-decoration: none;
+}
+
+.oz-calendar-plugin-view .react-calendar__month-view__days__day--weekend {
+	color: #d10000;
+}
+
+.oz-calendar-plugin-view
+	.react-calendar__month-view__days__day--neighboringMonth {
+	color: var(--text-muted);
+	opacity: 0.5;
+}
+
+.oz-calendar-plugin-view .react-calendar__tile {
+	max-width: 100%;
+	padding: 10px 6.6667px;
+	background: none;
+	text-align: center;
+	line-height: 16px;
+}
+
+.oz-calendar-plugin-view
+	button.react-calendar__tile.react-calendar__month-view__days__day,
+.oz-calendar-plugin-view button.react-calendar__navigation__arrow,
+.oz-calendar-plugin-view button.react-calendar__navigation__label {
+	background-color: transparent !important;
+	box-shadow: none !important;
+}
+
+.oz-calendar-plugin-view button.react-calendar__navigation__label {
+	color: var(--interactive-accent);
+	font-size: 1.1em;
+}
+
+.oz-calendar-plugin-view
+	.react-calendar__tile.react-calendar__month-view__days__day {
+	height: 40px;
+	display: block;
+}
+
+.oz-calendar-plugin-view .dots-wrapper {
+	font-size: 8px;
+	display: flex;
+	justify-content: center;
+	vertical-align: middle !important;
+	min-height: 3.5px !important;
+}
+
+.oz-calendar-plugin-view .dots-wrapper svg {
+	margin-top: 3.8px;
+}
+
+.oz-calendar-plugin-view .react-calendar__tile--active {
+	color: var(--interactive-accent);
+	font-weight: bold;
+	font-size: 1em;
+}
+
+#oz-calendar-divider {
+	height: 3.8px;
+	opacity: 0.3;
+	margin: 10px 0px 10px 0px;
+	border-bottom: 3px solid var(--text-muted);
+}
+
+.oz-calendar-notelist-container {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	vertical-align: middle;
+}
+
+.oz-calendar-nav-action-left {
+	display: inline-block;
+	width: 20%;
+	color: var(--text-muted);
+}
+
+.oz-calendar-nav-action-middle {
+	display: inline-block;
+	width: 60%;
+	text-align: center;
+	vertical-align: top;
+	font-size: 1.1em;
+	color: var(--interactive-accent);
+}
+
+.oz-calendar-nav-action-right {
+	display: inline-block;
+	width: 20%;
+	align-items: end;
+	text-align: right;
+	color: var(--text-muted);
+}
+
+.oz-calendar-nav-action-left svg:hover,
+.oz-calendar-nav-action-right svg:hover {
+	cursor: pointer;
+	opacity: 0.8;
+}
+
+.oz-calendar-notelist-container {
+	display: block;
+	padding: 5px;
+}
+
+.oz-calendar-note-line {
+	padding-top: 3px;
+	padding-bottom: 3px;
+	font-size: var(--nav-item-size);
+}
+
+.oz-calendar-note-line:hover {
+	cursor: pointer;
+}
+
+.oz-calendar-note-line-icon {
+	padding-right: 3px;
+	padding-bottom: 2px;
+	vertical-align: middle;
+}

@@ -1,7 +1,7 @@
 {
-	"name": "obsidian-sample-plugin",
+	"name": "oz-calendar",
 	"version": "1.0.0",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"description": "View your notes in Calendar using any YAML key with date",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
@@ -13,12 +13,24 @@
 	"license": "MIT",
 	"devDependencies": {
 		"@types/node": "^16.11.6",
+		"@types/react": "17.0.2",
+		"@types/react-calendar": "^3.9.0",
+		"@types/react-dom": "17.0.2",
 		"@typescript-eslint/eslint-plugin": "5.29.0",
 		"@typescript-eslint/parser": "5.29.0",
 		"builtin-modules": "3.3.0",
 		"esbuild": "0.17.3",
 		"obsidian": "latest",
+		"prettier": "^2.8.4",
 		"tslib": "2.4.0",
 		"typescript": "4.7.4"
+	},
+	"dependencies": {
+		"dayjs": "1.11.7",
+		"preact": "10",
+		"react": "npm:@preact/compat@17.0.2",
+		"react-calendar": "4.0.0",
+		"react-dom": "npm:@preact/compat@17.0.2",
+		"react-icons": "4.8.0"
 	}
 }
