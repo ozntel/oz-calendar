@@ -8,6 +8,10 @@
 	border-radius: 10px;
 }
 
+.OZCAL_ICON {
+	fill: var(--icon-color) !important;
+}
+
 .oz-calendar-plugin-view .react-calendar button:enabled:hover {
 	cursor: pointer;
 }
