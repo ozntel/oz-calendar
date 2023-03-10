@@ -108,7 +108,7 @@ export default class OZCalendarPlugin extends Plugin {
 		const { showAfterAttach } = params;
 		let leafs = this.app.workspace.getLeavesOfType(VIEW_TYPE);
 		if (leafs.length === 0) {
-			let leaf = this.app.workspace.getLeftLeaf(false);
+			let leaf = this.app.workspace.getRightLeaf(false);
 			await leaf.setViewState({ type: VIEW_TYPE });
 			if (showAfterAttach) this.app.workspace.revealLeaf(leaf);
 		} else {
