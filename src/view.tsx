@@ -6,7 +6,7 @@ import MyCalendar from './components/calendar';
 
 export const VIEW_TYPE = 'oz-calendar';
 export const VIEW_DISPLAY_TEXT = 'OZ Calendar';
-export const ICON = 'sheets-in-box';
+export const ICON = 'OZCAL_ICON';
 
 export class OZCalendarView extends ItemView {
 	plugin: OZCalendarPlugin;

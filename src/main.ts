@@ -1,7 +1,8 @@
-import { CachedMetadata, Plugin, TFile } from 'obsidian';
+import { CachedMetadata, Plugin, TFile, addIcon } from 'obsidian';
 import { OZCalendarView, VIEW_TYPE } from './view';
 import dayjs from 'dayjs';
 import { OZCalendarDaysMap } from './types';
+import { OZCAL_ICON } from './util/icons';
 import { OZCalendarPluginSettings, DEFAULT_SETTINGS, OZCalendarPluginSettingsTab } from 'settings';
 
 export default class OZCalendarPlugin extends Plugin {
@@ -12,6 +13,8 @@ export default class OZCalendarPlugin extends Plugin {
 	};
 
 	async onload() {
+		addIcon('OZCAL_ICON', OZCAL_ICON);
+
 		// Load Settings
 		this.addSettingTab(new OZCalendarPluginSettingsTab(this.app, this));
 		await this.loadSettings();

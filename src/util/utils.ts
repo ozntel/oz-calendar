@@ -1,5 +1,5 @@
 import { TFile } from 'obsidian';
-import OZCalendarPlugin from './main';
+import OZCalendarPlugin from '../main';
 
 /**
  * Helper to open a file passed in params within Obsidian (Tab/Separate)

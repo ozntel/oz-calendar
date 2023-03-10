@@ -4,7 +4,7 @@ import { HiOutlineDocumentText } from 'react-icons/hi';
 import { RiPhoneFindLine } from 'react-icons/ri';
 import dayjs from 'dayjs';
 import OZCalendarPlugin from '../main';
-import { openFile } from '../utils';
+import { openFile } from '../util/utils';
 import { TFile } from 'obsidian';
 
 interface NoteListComponentParams {
