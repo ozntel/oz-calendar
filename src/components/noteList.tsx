@@ -1,6 +1,7 @@
 import React from 'react';
 import { BsArrowRight, BsArrowLeft } from 'react-icons/bs';
 import { HiOutlineDocumentText } from 'react-icons/hi';
+import { RiPhoneFindLine } from 'react-icons/ri';
 import dayjs from 'dayjs';
 import OZCalendarPlugin from '../main';
 import { openFile } from '../utils';
@@ -56,6 +57,12 @@ export default function NoteListComponent(params: NoteListComponentParams) {
 				</div>
 			</div>
 			<div className="oz-calendar-notelist-container">
+				{selectedDayNotes.length === 0 && (
+					<div className="oz-calendar-note-no-note">
+						<RiPhoneFindLine className="oz-calendar-no-note-icon" />
+						No note found
+					</div>
+				)}
 				{selectedDayNotes.map((notePath) => {
 					return (
 						<div

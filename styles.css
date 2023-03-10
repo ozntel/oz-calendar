@@ -146,3 +146,16 @@
 	padding-bottom: 2px;
 	vertical-align: middle;
 }
+
+.oz-calendar-note-no-note {
+	font-size: var(--nav-item-size);
+	align-items: center;
+	text-align: center;
+	margin-top: 10px;
+}
+
+.oz-calendar-no-note-icon {
+	vertical-align: middle;
+	padding-bottom: 2px;
+	margin-right: 3px;
+}
