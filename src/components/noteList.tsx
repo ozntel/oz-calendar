@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { BsArrowRight, BsArrowLeft } from 'react-icons/bs';
 import { HiOutlineDocumentText } from 'react-icons/hi';
 import { RiPhoneFindLine } from 'react-icons/ri';
@@ -11,12 +11,12 @@ interface NoteListComponentParams {
 	selectedDay: Date;
 	setSelectedDay: (selectedDay: Date) => void;
 	setActiveStartDate: (newActiveStartDate: Date) => void;
-	selectedDayNotes: string[];
 	plugin: OZCalendarPlugin;
+	forceValue: number;
 }
 
 export default function NoteListComponent(params: NoteListComponentParams) {
-	const { selectedDayNotes, setSelectedDay, selectedDay, plugin, setActiveStartDate } = params;
+	const { setSelectedDay, selectedDay, plugin, setActiveStartDate, forceValue } = params;
 
 	const setNewSelectedDay = (nrChange: number) => {
 		let newDate = dayjs(selectedDay).add(nrChange, 'day');
@@ -44,6 +44,11 @@ export default function NoteListComponent(params: NoteListComponentParams) {
 			});
 		}
 	};
+
+	const selectedDayNotes = useMemo(() => {
+		const selectedDayIso = dayjs(selectedDay).format('YYYY-MM-DD');
+		return selectedDayIso in plugin.OZCALENDARDAYS_STATE ? plugin.OZCALENDARDAYS_STATE[selectedDayIso] : [];
+	}, [selectedDay, forceValue]);
 
 	return (
 		<>

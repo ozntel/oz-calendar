@@ -2,25 +2,17 @@ import React, { useEffect, useState } from 'react';
 import Calendar, { CalendarTileProperties } from 'react-calendar';
 import { RxDotFilled } from 'react-icons/rx';
 import OZCalendarPlugin from '../main';
-import useForceUpdate from '../hooks/forceUpdate';
 import NoteListComponent from './noteList';
 import dayjs from 'dayjs';
+import useForceUpdate from 'hooks/forceUpdate';
 
 export default function MyCalendar(params: { plugin: OZCalendarPlugin }) {
 	const { plugin } = params;
-	const forceUpdate = useForceUpdate();
 	const [selectedDay, setSelectedDay] = useState<Date>(new Date());
-	const [selectedDayNotes, setSelectedDayNotes] = useState<string[]>([]);
 	const [activeStartDate, setActiveStartDate] = useState<Date>(new Date());
+	const { forceValue, forceUpdate } = useForceUpdate();
 
 	useEffect(() => setActiveStartDate(selectedDay), [selectedDay]);
-
-	useEffect(() => {
-		const selectedDayIso = dayjs(selectedDay).format('YYYY-MM-DD');
-		const notes =
-			selectedDayIso in plugin.OZCALENDARDAYS_STATE ? plugin.OZCALENDARDAYS_STATE[selectedDayIso] : [];
-		setSelectedDayNotes(notes);
-	}, [selectedDay, plugin.OZCALENDARDAYS_STATE]);
 
 	useEffect(() => {
 		window.addEventListener(plugin.EVENT_TYPES.forceUpdate, forceUpdate);
@@ -29,12 +21,9 @@ export default function MyCalendar(params: { plugin: OZCalendarPlugin }) {
 		};
 	}, []);
 
-	useEffect(() => forceUpdate(), [plugin.OZCALENDARDAYS_STATE]);
-
 	const customTileContent = ({ date, view }: CalendarTileProperties) => {
 		if (view === 'month') {
 			const dateString = dayjs(date).format('YYYY-MM-DD');
-
 			let dotsCount =
 				dateString in plugin.OZCALENDARDAYS_STATE ? plugin.OZCALENDARDAYS_STATE[dateString].length : 0;
 			return (
@@ -78,8 +67,8 @@ export default function MyCalendar(params: { plugin: OZCalendarPlugin }) {
 					selectedDay={selectedDay}
 					setSelectedDay={setSelectedDay}
 					setActiveStartDate={setActiveStartDate}
-					selectedDayNotes={selectedDayNotes}
 					plugin={plugin}
+					forceValue={forceValue}
 				/>
 			</>
 		</div>

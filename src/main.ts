@@ -1,4 +1,4 @@
-import { CachedMetadata, Plugin, TFile, addIcon } from 'obsidian';
+import { CachedMetadata, Plugin, TAbstractFile, TFile, addIcon } from 'obsidian';
 import { OZCalendarView, VIEW_TYPE } from './view';
 import dayjs from 'dayjs';
 import { OZCalendarDaysMap } from './types';
@@ -31,27 +31,21 @@ export default class OZCalendarPlugin extends Plugin {
 		});
 
 		this.app.metadataCache.on('changed', this.handleCacheChange);
-		this.app.vault.on('rename', (file, oldPath) => {
-			if (file instanceof TFile && file.extension === 'md') {
-				this.removeFilePathFromState(oldPath);
-				this.scanTFileDate(file);
-			}
-		});
+		this.app.vault.on('rename', this.handleRename);
+		this.app.vault.on('delete', this.handleDelete);
 	}
 
-	scanTFileDate = (file: TFile) => {
-		let cache = this.app.metadataCache.getCache(file.path);
-		if (cache && cache.frontmatter) {
-			let fm = cache.frontmatter;
-			for (let k of Object.keys(cache.frontmatter)) {
-				if (k === this.settings.yamlKey) {
-					let fmValue = fm[k];
-					let parsedDayISOString = dayjs(fmValue, this.settings.dateFormat).format('YYYY-MM-DD');
-					this.addFilePathToState(parsedDayISOString, file.path);
-				}
-			}
-		}
-	};
+	onunload() {}
+
+	async loadSettings() {
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+	}
+
+	async saveSettings() {
+		await this.saveData(this.settings);
+	}
+
+	/* ------------ HANDLE VAULT CHANGES - HELPERS ------------ */
 
 	addFilePathToState = (date: string, filePath: string) => {
 		let newStateMap = this.OZCALENDARDAYS_STATE;
@@ -64,25 +58,45 @@ export default class OZCalendarPlugin extends Plugin {
 		this.OZCALENDARDAYS_STATE = newStateMap;
 	};
 
-	removeFilePathFromState = (filePath: string) => {
+	removeFilePathFromState = (filePath: string): boolean => {
+		let changeFlag = false;
 		let newStateMap = this.OZCALENDARDAYS_STATE;
 		for (let k of Object.keys(newStateMap)) {
 			if (newStateMap[k].contains(filePath)) {
 				newStateMap[k] = newStateMap[k].filter((p) => p !== filePath);
+				changeFlag = true;
 			}
 		}
 		this.OZCALENDARDAYS_STATE = newStateMap;
+		return changeFlag;
 	};
 
-	onunload() {}
+	scanTFileDate = (file: TFile): boolean => {
+		let cache = this.app.metadataCache.getCache(file.path);
+		let changeFlag = false;
+		if (cache && cache.frontmatter) {
+			let fm = cache.frontmatter;
+			for (let k of Object.keys(cache.frontmatter)) {
+				if (k === this.settings.yamlKey) {
+					let fmValue = fm[k];
+					let parsedDayISOString = dayjs(fmValue, this.settings.dateFormat).format('YYYY-MM-DD');
+					this.addFilePathToState(parsedDayISOString, file.path);
+					changeFlag = true;
+				}
+			}
+		}
+		return changeFlag;
+	};
 
-	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
-	}
+	calendarForceUpdate = () => {
+		window.dispatchEvent(
+			new CustomEvent(this.EVENT_TYPES.forceUpdate, {
+				detail: {},
+			})
+		);
+	};
 
-	async saveSettings() {
-		await this.saveData(this.settings);
-	}
+	/* ------------ HANDLE VAULT CHANGES - LISTENER FUNCTIONS ------------ */
 
 	handleCacheChange = (file: TFile, data: string, cache: CachedMetadata) => {
 		this.removeFilePathFromState(file.path);
@@ -107,6 +121,21 @@ export default class OZCalendarPlugin extends Plugin {
 		this.calendarForceUpdate();
 	};
 
+	handleRename = (file: TFile, oldPath: string) => {
+		if (file instanceof TFile && file.extension === 'md') {
+			let changeFlag = this.removeFilePathFromState(oldPath);
+			let changeFlag2 = this.scanTFileDate(file);
+			if (changeFlag || changeFlag2) this.calendarForceUpdate();
+		}
+	};
+
+	handleDelete = (file: TAbstractFile) => {
+		let changeFlag = this.removeFilePathFromState(file.path);
+		if (changeFlag) this.calendarForceUpdate();
+	};
+
+	/* ------------ OTHER FUNCTIONS ------------ */
+
 	openOZCalendarLeaf = async (params: { showAfterAttach: boolean }) => {
 		const { showAfterAttach } = params;
 		let leafs = this.app.workspace.getLeavesOfType(VIEW_TYPE);
@@ -119,14 +148,6 @@ export default class OZCalendarPlugin extends Plugin {
 				this.app.workspace.revealLeaf(leafs[0]);
 			}
 		}
-	};
-
-	calendarForceUpdate = () => {
-		window.dispatchEvent(
-			new CustomEvent(this.EVENT_TYPES.forceUpdate, {
-				detail: {},
-			})
-		);
 	};
 
 	reloadPlugin = () => {
