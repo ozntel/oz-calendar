@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import Calendar from 'react-calendar';
+import Calendar, { CalendarTileProperties } from 'react-calendar';
 import { RxDotFilled } from 'react-icons/rx';
 import OZCalendarPlugin from '../main';
 import useForceUpdate from '../hooks/forceUpdate';
@@ -28,7 +28,7 @@ export default function MyCalendar(params: { plugin: OZCalendarPlugin }) {
 
 	useEffect(() => forceUpdate(), [plugin.OZCALENDARDAYS_STATE]);
 
-	const customTileContent = ({ date, view }) => {
+	const customTileContent = ({ date, view }: CalendarTileProperties) => {
 		if (view === 'month') {
 			const dateString = dayjs(date).format('YYYY-MM-DD');
 
