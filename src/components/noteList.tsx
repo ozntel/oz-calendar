@@ -18,9 +18,8 @@ export default function NoteListComponent(params: NoteListComponentParams) {
 	const { selectedDayNotes, setSelectedDay, selectedDay, plugin } = params;
 
 	const setNewSelectedDay = (nrChange: number) => {
-		let newDate = new Date();
-		newDate.setDate(selectedDay.getDate() + nrChange);
-		setSelectedDay(newDate);
+		let newDate = dayjs(selectedDay).add(nrChange, 'day');
+		setSelectedDay(newDate.toDate());
 	};
 
 	const extractFileName = (filePath: string) => {
