@@ -1,11 +1,12 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { BsArrowRight, BsArrowLeft } from 'react-icons/bs';
 import { HiOutlineDocumentText } from 'react-icons/hi';
-import { RiPhoneFindLine } from 'react-icons/ri';
+import { RiPhoneFindLine, RiAddCircleLine } from 'react-icons/ri';
 import dayjs from 'dayjs';
-import OZCalendarPlugin from '../main';
+import OZCalendarPlugin from 'main';
 import { openFile } from '../util/utils';
 import { TFile } from 'obsidian';
+import { CreateNoteModal } from 'modal';
 
 interface NoteListComponentParams {
 	selectedDay: Date;
@@ -53,6 +54,15 @@ export default function NoteListComponent(params: NoteListComponentParams) {
 	return (
 		<>
 			<div className="oz-calendar-notelist-header-container">
+				<div className="oz-calendar-nav-action-plus">
+					<RiAddCircleLine
+						size={20}
+						onClick={() => {
+							let newFileModal = new CreateNoteModal(plugin, selectedDay);
+							newFileModal.open();
+						}}
+					/>
+				</div>
 				<div className="oz-calendar-nav-action-left">
 					<BsArrowLeft size={22} onClick={() => setNewSelectedDay(-1)} />
 				</div>

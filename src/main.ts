@@ -1,9 +1,9 @@
 import { CachedMetadata, Plugin, TAbstractFile, TFile, addIcon } from 'obsidian';
-import { OZCalendarView, VIEW_TYPE } from './view';
+import { OZCalendarView, VIEW_TYPE } from 'view';
 import dayjs from 'dayjs';
-import { OZCalendarDaysMap } from './types';
+import { OZCalendarDaysMap } from 'types';
 import { OZCAL_ICON } from './util/icons';
-import { OZCalendarPluginSettings, DEFAULT_SETTINGS, OZCalendarPluginSettingsTab } from 'settings';
+import { OZCalendarPluginSettings, DEFAULT_SETTINGS, OZCalendarPluginSettingsTab } from './settings/settings';
 
 export default class OZCalendarPlugin extends Plugin {
 	settings: OZCalendarPluginSettings;

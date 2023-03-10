@@ -1,16 +1,19 @@
 import OZCalendarPlugin from 'main';
 import { PluginSettingTab, App, Setting } from 'obsidian';
+import { FolderSuggest } from 'settings/suggestor';
 
 export interface OZCalendarPluginSettings {
 	openViewOnStart: boolean;
 	yamlKey: string;
 	dateFormat: string;
+	defaultFolder: string;
 }
 
 export const DEFAULT_SETTINGS: OZCalendarPluginSettings = {
 	openViewOnStart: true,
 	yamlKey: 'created',
 	dateFormat: 'YYYY-MM-DD hh:mm:ss',
+	defaultFolder: '/',
 };
 
 export class OZCalendarPluginSettingsTab extends PluginSettingTab {
@@ -89,6 +92,21 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 				button.onClick(() => {
 					this.plugin.reloadPlugin();
 				});
+			});
+
+		new Setting(this.containerEl)
+			.setName('Default Folder Location')
+			.setDesc('Select the defaukt folder, under which the new files should be saved')
+			.addSearch((cb) => {
+				new FolderSuggest(cb.inputEl);
+				cb.setPlaceholder('Example: folder1/folder2')
+					.setValue(this.plugin.settings.defaultFolder)
+					.onChange((new_folder) => {
+						this.plugin.settings.defaultFolder = new_folder;
+						this.plugin.saveSettings();
+					});
+				// @ts-ignore
+				cb.containerEl.addClass('templater_search');
 			});
 	}
 }
