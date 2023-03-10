@@ -1,3 +1,13 @@
+.oz-cal-coffee-div,
+.oz-cal-tip-div {
+	text-align: center;
+	margin-top: 10px;
+}
+
+.oz-cal-tip-div img {
+	border-radius: 10px;
+}
+
 .oz-calendar-plugin-view .react-calendar button:enabled:hover {
 	cursor: pointer;
 }
@@ -25,8 +35,7 @@
 	color: #d10000;
 }
 
-.oz-calendar-plugin-view
-	.react-calendar__month-view__days__day--neighboringMonth {
+.oz-calendar-plugin-view .react-calendar__month-view__days__day--neighboringMonth {
 	color: var(--text-muted);
 	opacity: 0.5;
 }
@@ -39,8 +48,7 @@
 	line-height: 16px;
 }
 
-.oz-calendar-plugin-view
-	button.react-calendar__tile.react-calendar__month-view__days__day,
+.oz-calendar-plugin-view button.react-calendar__tile.react-calendar__month-view__days__day,
 .oz-calendar-plugin-view button.react-calendar__navigation__arrow,
 .oz-calendar-plugin-view button.react-calendar__navigation__label {
 	background-color: transparent !important;
@@ -52,8 +60,7 @@
 	font-size: 1.1em;
 }
 
-.oz-calendar-plugin-view
-	.react-calendar__tile.react-calendar__month-view__days__day {
+.oz-calendar-plugin-view .react-calendar__tile.react-calendar__month-view__days__day {
 	height: 40px;
 	display: block;
 }

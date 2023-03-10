@@ -2,22 +2,28 @@ import { CachedMetadata, Plugin, TFile } from 'obsidian';
 import { OZCalendarView, VIEW_TYPE } from './view';
 import dayjs from 'dayjs';
 import { OZCalendarDaysMap } from './types';
+import { OZCalendarPluginSettings, DEFAULT_SETTINGS, OZCalendarPluginSettingsTab } from 'settings';
 
 export default class OZCalendarPlugin extends Plugin {
-	FM_KEY: string = 'created';
-	FM_FORMAT: string = 'YYYY-MM-DD hh:mm:ss';
+	settings: OZCalendarPluginSettings;
 	OZCALENDARDAYS_STATE: OZCalendarDaysMap = {};
 	EVENT_TYPES = {
 		forceUpdate: 'ozCalendarForceUpdate',
 	};
 
 	async onload() {
+		// Load Settings
+		this.addSettingTab(new OZCalendarPluginSettingsTab(this.app, this));
+		await this.loadSettings();
+
 		this.registerView(VIEW_TYPE, (leaf) => {
 			return new OZCalendarView(leaf, this);
 		});
 
 		this.app.workspace.onLayoutReady(() => {
-			this.openOZCalendarLeaf({ showAfterAttach: true });
+			if (this.settings.openViewOnStart) {
+				this.openOZCalendarLeaf({ showAfterAttach: true });
+			}
 			this.OZCALENDARDAYS_STATE = this.getNotesWithDates();
 		});
 
@@ -35,9 +41,9 @@ export default class OZCalendarPlugin extends Plugin {
 		if (cache && cache.frontmatter) {
 			let fm = cache.frontmatter;
 			for (let k of Object.keys(cache.frontmatter)) {
-				if (k === this.FM_KEY) {
+				if (k === this.settings.yamlKey) {
 					let fmValue = fm[k];
-					let parsedDayISOString = dayjs(fmValue, this.FM_FORMAT).format('YYYY-MM-DD');
+					let parsedDayISOString = dayjs(fmValue, this.settings.dateFormat).format('YYYY-MM-DD');
 					this.addFilePathToState(parsedDayISOString, file.path);
 				}
 			}
@@ -67,14 +73,22 @@ export default class OZCalendarPlugin extends Plugin {
 
 	onunload() {}
 
+	async loadSettings() {
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+	}
+
+	async saveSettings() {
+		await this.saveData(this.settings);
+	}
+
 	handleCacheChange = (file: TFile, data: string, cache: CachedMetadata) => {
 		this.removeFilePathFromState(file.path);
 		if (cache && cache.frontmatter) {
 			let fm = cache.frontmatter;
 			for (let k of Object.keys(cache.frontmatter)) {
-				if (k === this.FM_KEY) {
+				if (k === this.settings.yamlKey) {
 					let fmValue = fm[k];
-					let parsedDayISOString = dayjs(fmValue, this.FM_FORMAT).format('YYYY-MM-DD');
+					let parsedDayISOString = dayjs(fmValue, this.settings.dateFormat).format('YYYY-MM-DD');
 					// If date doesn't exist, create a new one
 					if (!(parsedDayISOString in this.OZCALENDARDAYS_STATE)) {
 						this.addFilePathToState(parsedDayISOString, file.path);
@@ -123,10 +137,10 @@ export default class OZCalendarPlugin extends Plugin {
 				let fm = fileCache.frontmatter;
 				// Check the FM keys vs the provided key by the user in settings @todo
 				for (let k of Object.keys(fm)) {
-					if (k === this.FM_KEY) {
+					if (k === this.settings.yamlKey) {
 						let fmValue = fm[k];
 						// Parse the date with provided date format
-						let parsedDayJsDate = dayjs(fmValue, this.FM_FORMAT);
+						let parsedDayJsDate = dayjs(fmValue, this.settings.dateFormat);
 						// Take only YYYY-MM-DD part fromt the date as String
 						let parsedDayISOString = parsedDayJsDate.format('YYYY-MM-DD');
 						// Check if it already exists
