@@ -72,7 +72,7 @@ export default function NoteListComponent(params: NoteListComponentParams) {
 				<div className="oz-calendar-nav-action-plus">
 					<RiAddCircleLine
 						size={20}
-						aria-label="Add a note under default folder"
+						aria-label="Create note for today"
 						onClick={() => {
 							let newFileModal = new CreateNoteModal(plugin, new Date());
 							newFileModal.open();
@@ -84,7 +84,7 @@ export default function NoteListComponent(params: NoteListComponentParams) {
 				</div>
 				<div
 					className="oz-calendar-nav-action-middle"
-					aria-label="Show active date on Calendar"
+					aria-label="Show active date on calendar"
 					onClick={() => setActiveStartDate(selectedDay)}>
 					{dayjs(selectedDay).format('DD MMM YYYY')}
 				</div>
@@ -94,7 +94,7 @@ export default function NoteListComponent(params: NoteListComponentParams) {
 				<div className="oz-calendar-nav-action-plus">
 					<MdToday
 						size={20}
-						aria-label="Set Today as Selected Day"
+						aria-label="Set today as selected day"
 						onClick={() => {
 							setActiveStartDate(new Date());
 							setSelectedDay(new Date());
