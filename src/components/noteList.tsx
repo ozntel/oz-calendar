@@ -36,7 +36,7 @@ export default function NoteListComponent(params: NoteListComponentParams) {
 	};
 
 	const openFilePath = (filePath: string) => {
-		let abstractFile = plugin.app.metadataCache.getFirstLinkpathDest(filePath, '');
+		let abstractFile = plugin.app.vault.getAbstractFileByPath(filePath);
 		if (abstractFile) {
 			openFile({
 				file: abstractFile as TFile,
