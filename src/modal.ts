@@ -30,7 +30,7 @@ export class CreateNoteModal extends Modal {
 		fileNameInputEl.style.cssText = inputCss;
 
 		let defFileNamePref = this.plugin.settings.defaultFileNamePrefix;
-		if (defFileNamePref !== '' && dayjs(new Date(), defFileNamePref, true).isValid()) {
+		if (defFileNamePref !== '') {
 			fileNameInputEl.value = dayjs(this.destinationDate).format(defFileNamePref) + ' ';
 		}
 
