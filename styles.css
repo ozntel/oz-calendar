@@ -12,6 +12,10 @@
 	fill: var(--icon-color) !important;
 }
 
+.oz-calendar-plugin-view .react-calendar__tile.react-calendar__month-view__days__day:hover {
+	background: var(--background-secondary-alt);
+}
+
 .oz-calendar-plugin-view .react-calendar button:enabled:hover {
 	cursor: pointer;
 }
@@ -55,7 +59,7 @@
 .oz-calendar-plugin-view button.react-calendar__tile.react-calendar__month-view__days__day,
 .oz-calendar-plugin-view button.react-calendar__navigation__arrow,
 .oz-calendar-plugin-view button.react-calendar__navigation__label {
-	background-color: transparent !important;
+	background-color: transparent;
 	box-shadow: none !important;
 }
 
