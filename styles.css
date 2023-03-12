@@ -11,11 +11,27 @@ settings:
         type: variable-color
         format: hex
         default: '#f76a6a'
+    -
+        id: oz-calendar-selected-daycolor
+        title: Selected Day Text Color
+        description: Set the color of selected day in the month view, defaulted to the interactive-accent
+        type: variable-color
+        format: hex
+        default: '#'
+    -
+        id: oz-calendar-header-date-color
+        title: Header Dates Text Color
+        description: Set the color of headers dates like (month/year, and date above the list), defaulted to the interactive-accent
+        type: variable-color
+        format: hex
+        default: '#'
 */
 
 .theme-light,
 .theme-dark {
 	--oz-calendar-weekend-color: #f76a6a;
+	--oz-calendar-selected-daycolor: var(----interactive-accent);
+	--oz-calendar-header-date-color: var(----interactive-accent);
 }
 
 .oz-cal-coffee-div,
@@ -84,7 +100,7 @@ settings:
 }
 
 .oz-calendar-plugin-view button.react-calendar__navigation__label {
-	color: var(--interactive-accent);
+	color: var(--oz-calendar-header-date-color);
 	font-size: 1.3em;
 }
 
@@ -106,7 +122,7 @@ settings:
 }
 
 .oz-calendar-plugin-view .react-calendar__tile--active {
-	color: var(--interactive-accent);
+	color: var(--oz-calendar-selected-daycolor);
 	font-weight: bold;
 	font-size: 1em;
 }
@@ -151,7 +167,7 @@ settings:
 	text-align: center;
 	vertical-align: top;
 	font-size: 1.1em;
-	color: var(--interactive-accent);
+	color: var(--oz-calendar-header-date-color);
 	cursor: pointer;
 }
 
@@ -203,3 +219,32 @@ settings:
 	padding-bottom: 2px;
 	margin-right: 3px;
 }
+
+/* START - Fixed Calendar Except Note List - Scroll */
+
+.oz-calendar-plugin-view.fixed {
+	height: 100%;
+	max-height: 100%;
+	display: flex;
+	flex-direction: column;
+}
+
+.oz-calendar-plugin-view.fixed .react-calendar {
+	height: 255px;
+}
+
+.oz-calendar-plugin-view.fixed #oz-calendar-divider {
+	height: 4px;
+}
+
+.oz-calendar-plugin-view.fixed .oz-calendar-notelist-header-container {
+	height: 30px;
+}
+
+.oz-calendar-plugin-view.fixed .oz-calendar-notelist-container {
+	width: 100%;
+	overflow-y: auto;
+	vertical-align: top;
+}
+
+/*  END - Fixed Calendar */

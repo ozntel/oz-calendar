@@ -8,6 +8,7 @@ export interface OZCalendarPluginSettings {
 	dateFormat: string;
 	defaultFolder: string;
 	defaultFileNamePrefix: string;
+	fixedCalendar: boolean;
 }
 
 export const DEFAULT_SETTINGS: OZCalendarPluginSettings = {
@@ -16,6 +17,7 @@ export const DEFAULT_SETTINGS: OZCalendarPluginSettings = {
 	dateFormat: 'YYYY-MM-DD hh:mm:ss',
 	defaultFolder: '/',
 	defaultFileNamePrefix: 'YYYY-MM-DD',
+	fixedCalendar: true,
 };
 
 export class OZCalendarPluginSettingsTab extends PluginSettingTab {
@@ -56,6 +58,8 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 
 		containerEl.createEl('h1', { text: 'OZ Calendar Plugin Settings' });
 
+		containerEl.createEl('h2', { text: 'General Settings' });
+
 		new Setting(containerEl)
 			.setName('Open Calendar on Start')
 			.setDesc('Disable if you dont want Calendar View to be opened during the initial vault launch')
@@ -65,6 +69,16 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 					this.plugin.saveSettings();
 				});
 			});
+
+		containerEl.createEl('h2', { text: 'YAML and Date Format' });
+
+		containerEl.createEl('p', {
+			text: `
+            When you make a change under this section for YAML Key and Date Format, make sure that
+            you also use "Reload Plugin" button so that the changes can be activated.
+            `,
+			cls: 'setting-item-description',
+		});
 
 		new Setting(containerEl)
 			.setName('YAML Key')
@@ -96,6 +110,8 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 				});
 			});
 
+		containerEl.createEl('h2', { text: 'New Note Settings' });
+
 		new Setting(this.containerEl)
 			.setName('Default Folder Location')
 			.setDesc('Select the default folder, under which the new files should be saved when use plugin + icon')
@@ -120,6 +136,28 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 				text.setValue(this.plugin.settings.defaultFileNamePrefix).onChange((newValue) => {
 					this.plugin.settings.defaultFileNamePrefix = newValue;
 					this.plugin.saveSettings();
+				});
+			});
+
+		containerEl.createEl('h2', { text: 'Style Settings' });
+
+		containerEl.createEl('p', {
+			text: `
+            You can adjust most of the style settings using Style Settings plugin. Please download from Community Plugins
+            to be able to adjust colors, etc. Below you can find some of the Style Settings that can not be incorporated
+            to the Style Settings
+        `,
+			cls: 'setting-item-description',
+		});
+
+		new Setting(containerEl)
+			.setName('Fixed Calendar (Only File List Scrollable)')
+			.setDesc('Disable this if you want whole calendar view to be scrollable and not only the file list')
+			.addToggle((toggle) => {
+				toggle.setValue(this.plugin.settings.fixedCalendar).onChange((newValue) => {
+					this.plugin.settings.fixedCalendar = newValue;
+					this.plugin.saveSettings();
+					this.plugin.calendarForceUpdate();
 				});
 			});
 	}

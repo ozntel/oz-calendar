@@ -39,7 +39,7 @@ export default function MyCalendar(params: { plugin: OZCalendarPlugin }) {
 	};
 
 	return (
-		<div>
+		<div className={'oz-calendar-plugin-view' + (plugin.settings.fixedCalendar ? ' fixed' : '')}>
 			<Calendar
 				onChange={setSelectedDay}
 				value={selectedDay}

@@ -38,11 +38,6 @@ export class OZCalendarView extends ItemView {
 
 	async onOpen() {
 		this.destroy();
-		ReactDOM.render(
-			<div className="oz-calendar-plugin-view">
-				<MyCalendar plugin={this.plugin} />
-			</div>,
-			this.contentEl
-		);
+		ReactDOM.render(<MyCalendar plugin={this.plugin} />, this.contentEl);
 	}
 }
