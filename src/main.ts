@@ -1,6 +1,7 @@
 import { CachedMetadata, Menu, Plugin, TAbstractFile, TFile, addIcon } from 'obsidian';
 import { OZCalendarView, VIEW_TYPE } from 'view';
 import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { OZCalendarDaysMap } from 'types';
 import { OZCAL_ICON } from './util/icons';
 import { OZCalendarPluginSettings, DEFAULT_SETTINGS, OZCalendarPluginSettingsTab } from './settings/settings';
@@ -17,6 +18,8 @@ export default class OZCalendarPlugin extends Plugin {
 
 	async onload() {
 		addIcon('OZCAL_ICON', OZCAL_ICON);
+
+		dayjs.extend(customParseFormat);
 
 		// Load Settings
 		this.addSettingTab(new OZCalendarPluginSettingsTab(this.app, this));
@@ -178,7 +181,7 @@ export default class OZCalendarPlugin extends Plugin {
 				// Check the FM keys vs the provided key by the user in settings
 				for (let k of Object.keys(fm)) {
 					if (k === this.settings.yamlKey) {
-						let fmValue = fm[k];
+						let fmValue = (fm[k] as string).substring(0, this.settings.dateFormat.length);
 						// Parse the date with provided date format
 						let parsedDayJsDate = dayjs(fmValue, this.settings.dateFormat);
 						// Take only YYYY-MM-DD part fromt the date as String
