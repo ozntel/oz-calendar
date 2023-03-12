@@ -13,6 +13,16 @@ If you like the see your notes on a Calendar and easily find using a certain dat
 3. Define **Date Format** you are using within **YAML**. The default date format is **YYYY-MM-DD hh:mm:ss**
 4. After these changes, use **Reload Plugin** option to activate the changes in the vault.
 
+For the ones that don't know how to add YAML key, see the following:
+
+```md
+---
+created: 2023-03-10 09:48:22
+---
+```
+
+You can use any YAML key instead of "created" and any date format value for the key.
+
 ## Create File Option
 
 You can use the **Plus(+)** icon within the calendar view to add a note with default YAML key and date format.
