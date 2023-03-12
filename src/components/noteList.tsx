@@ -37,12 +37,13 @@ export default function NoteListComponent(params: NoteListComponentParams) {
 
 	const openFilePath = (filePath: string) => {
 		let abstractFile = plugin.app.vault.getAbstractFileByPath(filePath);
+		let openFileBehaviour = plugin.settings.openFileBehaviour;
 		if (abstractFile) {
 			openFile({
 				file: abstractFile as TFile,
 				plugin: plugin,
-				newLeaf: true,
-				leafBySplit: false,
+				newLeaf: openFileBehaviour === 'new-tab',
+				leafBySplit: openFileBehaviour === 'new-tab-group',
 			});
 		}
 	};

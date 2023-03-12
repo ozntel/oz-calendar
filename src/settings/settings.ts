@@ -2,6 +2,8 @@ import OZCalendarPlugin from 'main';
 import { PluginSettingTab, App, Setting } from 'obsidian';
 import { FolderSuggest } from 'settings/suggestor';
 
+export type OpenFileBehaviourType = 'new-tab' | 'new-tab-group' | 'current-tab';
+
 export interface OZCalendarPluginSettings {
 	openViewOnStart: boolean;
 	yamlKey: string;
@@ -10,6 +12,7 @@ export interface OZCalendarPluginSettings {
 	defaultFileNamePrefix: string;
 	fixedCalendar: boolean;
 	showDestinationFolderDuringCreate: boolean;
+	openFileBehaviour: OpenFileBehaviourType;
 }
 
 export const DEFAULT_SETTINGS: OZCalendarPluginSettings = {
@@ -20,6 +23,7 @@ export const DEFAULT_SETTINGS: OZCalendarPluginSettings = {
 	defaultFileNamePrefix: 'YYYY-MM-DD',
 	fixedCalendar: true,
 	showDestinationFolderDuringCreate: true,
+	openFileBehaviour: 'current-tab',
 };
 
 export class OZCalendarPluginSettingsTab extends PluginSettingTab {
@@ -70,6 +74,21 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 					this.plugin.settings.openViewOnStart = newValue;
 					this.plugin.saveSettings();
 				});
+			});
+
+		new Setting(containerEl)
+			.setName('Open File Behaviour')
+			.setDesc('Select the behaviour you want to have when you click on file name in the calendar view')
+			.addDropdown((dropdown) => {
+				dropdown
+					.addOption('new-tab', 'Open in a New Tab')
+					.addOption('new-tab-group', 'Open in a New Tab Group')
+					.addOption('current-tab', 'Open in the Active Tab')
+					.setValue(this.plugin.settings.openFileBehaviour)
+					.onChange((newValue: OpenFileBehaviourType) => {
+						this.plugin.settings.openFileBehaviour = newValue;
+						this.plugin.saveSettings();
+					});
 			});
 
 		containerEl.createEl('h2', { text: 'YAML and Date Format' });
