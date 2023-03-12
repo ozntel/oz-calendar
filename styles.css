@@ -1,3 +1,23 @@
+/* @settings
+
+name: OZ Calendar Plugin
+id: oz-calendar-plugin
+settings:
+
+    -
+        id: oz-calendar-weekend-color
+        title: Weekend Text Color
+        description: Set the color of weekend in the calendar
+        type: variable-color
+        format: hex
+        default: '#f76a6a'
+*/
+
+.theme-light,
+.theme-dark {
+	--oz-calendar-weekend-color: #f76a6a;
+}
+
 .oz-cal-coffee-div,
 .oz-cal-tip-div {
 	text-align: center;
@@ -40,7 +60,7 @@
 }
 
 .oz-calendar-plugin-view .react-calendar__month-view__days__day--weekend {
-	color: #d10000;
+	color: var(--oz-calendar-weekend-color);
 }
 
 .oz-calendar-plugin-view .react-calendar__month-view__days__day--neighboringMonth {
@@ -137,7 +157,7 @@
 
 .oz-calendar-nav-action-right {
 	display: inline-block;
-	width: 25%;
+	width: 15%;
 	text-align: left;
 	color: var(--text-muted);
 }

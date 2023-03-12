@@ -29,3 +29,7 @@ export const createNewMarkdownFile = async (
 	if (content && content !== '') await plugin.app.vault.modify(newFile, content);
 	openFile({ file: newFile, plugin: plugin, newLeaf: false });
 };
+
+export function isMouseEvent(e: React.TouchEvent | React.MouseEvent): e is React.MouseEvent {
+	return e && 'screenX' in e;
+}

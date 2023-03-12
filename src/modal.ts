@@ -25,6 +25,11 @@ export class CreateNoteModal extends Modal {
 		const inputEl = contentEl.createEl('input');
 		inputEl.style.cssText = 'width: 100%; height: 2.5em; margin-bottom: 15px;';
 
+		let defFileNamePref = this.plugin.settings.defaultFileNamePrefix;
+		if (defFileNamePref !== '' && dayjs(new Date(), defFileNamePref, true).isValid()) {
+			inputEl.value = dayjs().format(defFileNamePref) + ' ';
+		}
+
 		inputEl.focus();
 
 		const createButton = contentEl.createEl('button', { text: 'Create Note' });

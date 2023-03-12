@@ -7,6 +7,7 @@ export interface OZCalendarPluginSettings {
 	yamlKey: string;
 	dateFormat: string;
 	defaultFolder: string;
+	defaultFileNamePrefix: string;
 }
 
 export const DEFAULT_SETTINGS: OZCalendarPluginSettings = {
@@ -14,6 +15,7 @@ export const DEFAULT_SETTINGS: OZCalendarPluginSettings = {
 	yamlKey: 'created',
 	dateFormat: 'YYYY-MM-DD hh:mm:ss',
 	defaultFolder: '/',
+	defaultFileNamePrefix: 'YYYY-MM-DD',
 };
 
 export class OZCalendarPluginSettingsTab extends PluginSettingTab {
@@ -96,7 +98,7 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 
 		new Setting(this.containerEl)
 			.setName('Default Folder Location')
-			.setDesc('Select the defaukt folder, under which the new files should be saved')
+			.setDesc('Select the default folder, under which the new files should be saved when use plugin + icon')
 			.addSearch((cb) => {
 				new FolderSuggest(cb.inputEl);
 				cb.setPlaceholder('Example: folder1/folder2')
@@ -107,6 +109,18 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 					});
 				// @ts-ignore
 				cb.containerEl.addClass('templater_search');
+			});
+
+		new Setting(containerEl)
+			.setName('Default File Name Prefix Date Format')
+			.setDesc(
+				'Set the default file name prefix date format that will be used when you create a note using + icon. Leave blank if you dont want any'
+			)
+			.addText((text) => {
+				text.setValue(this.plugin.settings.defaultFileNamePrefix).onChange((newValue) => {
+					this.plugin.settings.defaultFileNamePrefix = newValue;
+					this.plugin.saveSettings();
+				});
 			});
 	}
 }
