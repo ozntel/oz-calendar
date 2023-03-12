@@ -9,6 +9,7 @@ export interface OZCalendarPluginSettings {
 	defaultFolder: string;
 	defaultFileNamePrefix: string;
 	fixedCalendar: boolean;
+	showDestinationFolderDuringCreate: boolean;
 }
 
 export const DEFAULT_SETTINGS: OZCalendarPluginSettings = {
@@ -18,6 +19,7 @@ export const DEFAULT_SETTINGS: OZCalendarPluginSettings = {
 	defaultFolder: '/',
 	defaultFileNamePrefix: 'YYYY-MM-DD',
 	fixedCalendar: true,
+	showDestinationFolderDuringCreate: true,
 };
 
 export class OZCalendarPluginSettingsTab extends PluginSettingTab {
@@ -123,8 +125,6 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 						this.plugin.settings.defaultFolder = new_folder;
 						this.plugin.saveSettings();
 					});
-				// @ts-ignore
-				cb.containerEl.addClass('templater_search');
 			});
 
 		new Setting(containerEl)
@@ -135,6 +135,23 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 			.addText((text) => {
 				text.setValue(this.plugin.settings.defaultFileNamePrefix).onChange((newValue) => {
 					this.plugin.settings.defaultFileNamePrefix = newValue;
+					this.plugin.saveSettings();
+				});
+			});
+
+		new Setting(containerEl)
+			.setName('Show Destination Folder During File Creation')
+			.setDesc(
+				`
+                Disable this if you dont want to see the destination folder selection during 
+                the file creation process. The value is always going to be defaulted to the
+                selected Default Folder above. You can change the destination folder for each
+                folder separately but the default value will always stay same.
+                `
+			)
+			.addToggle((toggle) => {
+				toggle.setValue(this.plugin.settings.showDestinationFolderDuringCreate).onChange((newValue) => {
+					this.plugin.settings.showDestinationFolderDuringCreate = newValue;
 					this.plugin.saveSettings();
 				});
 			});
