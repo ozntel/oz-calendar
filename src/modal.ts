@@ -43,8 +43,12 @@ export class CreateNoteModal extends Modal {
 			folderInputEl = contentEl.createEl('input');
 			new FolderSuggest(folderInputEl);
 			folderInputEl.value = this.plugin.settings.defaultFolder;
-			folderInputEl.style.cssText = inputCss + '; margin-bottom: 15px;';
+			folderInputEl.style.cssText = inputCss;
 		}
+
+		// Additional Space
+		let addSpace = contentEl.createEl('div');
+		addSpace.style.cssText = 'height: 20px;';
 
 		// Create - Cancel Buttons
 		const createButton = contentEl.createEl('button', { text: 'Create Note' });
