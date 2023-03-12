@@ -21,6 +21,8 @@ You can define in the plugin settings:
 
 -   The **Default Folder** the plugin is supposed to save the new file. The plugin also gives you option to enable/disable destination folder selection during each note creation. The destination folder is always going to be defaulted to the one defined in the plugin settings but can be adjusted for single notes.
 -   And the **File Prefix Date Format** in case you prefer your file names to start with a certain date format
+-   You can right click any date in the calendar view to create note for a certain date
+-   The plus icon is defaulted to create a note for today
 
 ## Style Settings Plugin Support
 
