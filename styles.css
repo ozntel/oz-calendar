@@ -90,6 +90,8 @@ settings:
 	background: none;
 	text-align: center;
 	line-height: 16px;
+	height: 40px;
+	display: block;
 }
 
 .oz-calendar-plugin-view button.react-calendar__tile.react-calendar__month-view__days__day,
@@ -102,11 +104,6 @@ settings:
 .oz-calendar-plugin-view button.react-calendar__navigation__label {
 	color: var(--oz-calendar-header-date-color);
 	font-size: 1.3em;
-}
-
-.oz-calendar-plugin-view .react-calendar__tile.react-calendar__month-view__days__day {
-	height: 40px;
-	display: block;
 }
 
 .oz-calendar-plugin-view .dots-wrapper {
