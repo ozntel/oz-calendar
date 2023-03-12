@@ -13,12 +13,10 @@ If you like the see your notes on a Calendar and easily find using a certain dat
 
 You can use the **Plus(+)** icon within the calendar view to add a note with default YAML key and date format.
 
-You can define
+You can define in the plugin settings:
 
--   The **default folder** the plugin is supposed to save the new file
--   And the **file prefix date format** in case you prefer your file names to start with a certain date format
-
-within the plugin settings.
+-   The **Default Folder** the plugin is supposed to save the new file. The plugin also gives you option to enable/disable destination folder selection during each note creation. The destination folder is always going to be defaulted to the one defined in the plugin settings but can be adjusted for single notes.
+-   And the **File Prefix Date Format** in case you prefer your file names to start with a certain date format
 
 ## Style Settings Plugin Support
 
