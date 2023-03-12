@@ -175,7 +175,7 @@ export default class OZCalendarPlugin extends Plugin {
 			// Check if there is Frontmatter
 			if (fileCache && fileCache.frontmatter) {
 				let fm = fileCache.frontmatter;
-				// Check the FM keys vs the provided key by the user in settings @todo
+				// Check the FM keys vs the provided key by the user in settings
 				for (let k of Object.keys(fm)) {
 					if (k === this.settings.yamlKey) {
 						let fmValue = fm[k];
