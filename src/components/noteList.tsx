@@ -74,7 +74,7 @@ export default function NoteListComponent(params: NoteListComponentParams) {
 						size={20}
 						aria-label="Add a note under default folder"
 						onClick={() => {
-							let newFileModal = new CreateNoteModal(plugin, selectedDay);
+							let newFileModal = new CreateNoteModal(plugin, new Date());
 							newFileModal.open();
 						}}
 					/>

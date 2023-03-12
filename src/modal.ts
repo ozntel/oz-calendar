@@ -7,12 +7,12 @@ import { FolderSuggest } from 'settings/suggestor';
 
 export class CreateNoteModal extends Modal {
 	plugin: OZCalendarPlugin;
-	selectedDay: Date;
+	destinationDate: Date;
 
-	constructor(plugin: OZCalendarPlugin, selectedDay: Date) {
+	constructor(plugin: OZCalendarPlugin, destinationDate: Date) {
 		super(plugin.app);
 		this.plugin = plugin;
-		this.selectedDay = selectedDay;
+		this.destinationDate = destinationDate;
 	}
 
 	onOpen(): void {
@@ -31,7 +31,7 @@ export class CreateNoteModal extends Modal {
 
 		let defFileNamePref = this.plugin.settings.defaultFileNamePrefix;
 		if (defFileNamePref !== '' && dayjs(new Date(), defFileNamePref, true).isValid()) {
-			fileNameInputEl.value = dayjs().format(defFileNamePref) + ' ';
+			fileNameInputEl.value = dayjs(this.destinationDate).format(defFileNamePref) + ' ';
 		}
 
 		fileNameInputEl.focus();
@@ -60,15 +60,19 @@ export class CreateNoteModal extends Modal {
 				let defFolderSrc = folderInputEl ? folderInputEl.value : this.plugin.settings.defaultFolder;
 				let defFolder = this.app.vault.getAbstractFileByPath(defFolderSrc);
 				if (defFolder && defFolder instanceof TFolder) {
-					// Default Text Preparation for File
+					// Default Text Preparation for File with YAML and Date
 					let defaultNewFileText = stripIndents`
                     ---
-                    ${this.plugin.settings.yamlKey}: ${dayjs().format(this.plugin.settings.dateFormat)}
+                    ${this.plugin.settings.yamlKey}: ${dayjs(this.destinationDate).format(
+						this.plugin.settings.dateFormat
+					)}
                     ---
                     `;
 					// Create the MD File and close the modal
 					await createNewMarkdownFile(this.plugin, defFolder, newFileName, defaultNewFileText);
 					thisModal.close();
+				} else {
+					new Notice('Folder couldnt be found in the Vault');
 				}
 			} else {
 				new Notice('You didnt provide file name');

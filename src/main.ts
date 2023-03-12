@@ -1,9 +1,10 @@
-import { CachedMetadata, Plugin, TAbstractFile, TFile, addIcon } from 'obsidian';
+import { CachedMetadata, Menu, Plugin, TAbstractFile, TFile, addIcon } from 'obsidian';
 import { OZCalendarView, VIEW_TYPE } from 'view';
 import dayjs from 'dayjs';
 import { OZCalendarDaysMap } from 'types';
 import { OZCAL_ICON } from './util/icons';
 import { OZCalendarPluginSettings, DEFAULT_SETTINGS, OZCalendarPluginSettingsTab } from './settings/settings';
+import { CreateNoteModal } from 'modal';
 
 export default class OZCalendarPlugin extends Plugin {
 	settings: OZCalendarPluginSettings;
@@ -11,6 +12,8 @@ export default class OZCalendarPlugin extends Plugin {
 	EVENT_TYPES = {
 		forceUpdate: 'ozCalendarForceUpdate',
 	};
+
+	dayMonthSelectorQuery = '.oz-calendar-plugin-view .react-calendar__tile.react-calendar__month-view__days__day';
 
 	async onload() {
 		addIcon('OZCAL_ICON', OZCAL_ICON);
@@ -33,9 +36,15 @@ export default class OZCalendarPlugin extends Plugin {
 		this.app.metadataCache.on('changed', this.handleCacheChange);
 		this.app.vault.on('rename', this.handleRename);
 		this.app.vault.on('delete', this.handleDelete);
+
+		// Add Event Handler for Custom Note Creation
+		document.on('contextmenu', this.dayMonthSelectorQuery, this.handleMonthDayContextMenu);
 	}
 
-	onunload() {}
+	onunload() {
+		// Remove Event Handler for Custom Note Creation
+		document.off('contextmenu', this.dayMonthSelectorQuery, this.handleMonthDayContextMenu);
+	}
 
 	async loadSettings() {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
@@ -188,5 +197,26 @@ export default class OZCalendarPlugin extends Plugin {
 			}
 		}
 		return OZCalendarDays;
+	};
+
+	handleMonthDayContextMenu = (ev: MouseEvent, delegateTarget: HTMLElement) => {
+		let abbrItem = delegateTarget.querySelector('abbr[aria-label]');
+		if (abbrItem) {
+			let destDate = abbrItem.getAttr('aria-label');
+			if (destDate && destDate.length > 0) {
+				let dayjsDate = dayjs(destDate, 'MMMM D, YYYY');
+				let menu = new Menu();
+				menu.addItem((menuItem) => {
+					menuItem
+						.setTitle('Create a note for this date')
+						.setIcon('create-new')
+						.onClick((evt) => {
+							let modal = new CreateNoteModal(this, dayjsDate.toDate());
+							modal.open();
+						});
+				});
+				menu.showAtPosition({ x: ev.pageX, y: ev.pageY });
+			}
+		}
 	};
 }
