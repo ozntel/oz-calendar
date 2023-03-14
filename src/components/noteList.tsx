@@ -50,7 +50,13 @@ export default function NoteListComponent(params: NoteListComponentParams) {
 
 	const selectedDayNotes = useMemo(() => {
 		const selectedDayIso = dayjs(selectedDay).format('YYYY-MM-DD');
-		return selectedDayIso in plugin.OZCALENDARDAYS_STATE ? plugin.OZCALENDARDAYS_STATE[selectedDayIso] : [];
+		let sortedList =
+			selectedDayIso in plugin.OZCALENDARDAYS_STATE ? plugin.OZCALENDARDAYS_STATE[selectedDayIso] : [];
+		sortedList = sortedList.sort((a, b) => {
+			if (plugin.settings.sortingOption === 'name-rev') [a, b] = [b, a];
+			return extractFileName(a).localeCompare(extractFileName(b), 'en', { numeric: true });
+		});
+		return sortedList;
 	}, [selectedDay, forceValue]);
 
 	const triggerFileContextMenu = (e: React.MouseEvent | React.TouchEvent, filePath: string) => {

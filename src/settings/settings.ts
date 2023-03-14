@@ -3,6 +3,7 @@ import { PluginSettingTab, App, Setting } from 'obsidian';
 import { FolderSuggest } from 'settings/suggestor';
 
 export type OpenFileBehaviourType = 'new-tab' | 'new-tab-group' | 'current-tab';
+export type SortingOption = 'name' | 'name-rev';
 
 export interface OZCalendarPluginSettings {
 	openViewOnStart: boolean;
@@ -13,6 +14,7 @@ export interface OZCalendarPluginSettings {
 	fixedCalendar: boolean;
 	showDestinationFolderDuringCreate: boolean;
 	openFileBehaviour: OpenFileBehaviourType;
+	sortingOption: SortingOption;
 }
 
 export const DEFAULT_SETTINGS: OZCalendarPluginSettings = {
@@ -24,6 +26,7 @@ export const DEFAULT_SETTINGS: OZCalendarPluginSettings = {
 	fixedCalendar: true,
 	showDestinationFolderDuringCreate: true,
 	openFileBehaviour: 'current-tab',
+	sortingOption: 'name',
 };
 
 export class OZCalendarPluginSettingsTab extends PluginSettingTab {
@@ -88,6 +91,21 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 					.onChange((newValue: OpenFileBehaviourType) => {
 						this.plugin.settings.openFileBehaviour = newValue;
 						this.plugin.saveSettings();
+					});
+			});
+
+		new Setting(containerEl)
+			.setName('File List Sorting')
+			.setDesc('Select the sorting behaviour in the file list')
+			.addDropdown((dropdown) => {
+				dropdown
+					.addOption('name', 'File Name (A to Z)')
+					.addOption('name-rev', 'File Name (Z to A)')
+					.setValue(this.plugin.settings.sortingOption)
+					.onChange((newValue: SortingOption) => {
+						this.plugin.settings.sortingOption = newValue;
+						this.plugin.saveSettings();
+						this.plugin.calendarForceUpdate();
 					});
 			});
 
