@@ -59,6 +59,11 @@ export default class OZCalendarPlugin extends Plugin {
 
 	/* ------------ HANDLE VAULT CHANGES - HELPERS ------------ */
 
+	/**
+	 * Adds the provided filePath to the corresponding date within plugin state
+	 * @param date
+	 * @param filePath
+	 */
 	addFilePathToState = (date: string, filePath: string) => {
 		let newStateMap = this.OZCALENDARDAYS_STATE;
 		// if exists, add the new file path
@@ -70,6 +75,11 @@ export default class OZCalendarPlugin extends Plugin {
 		this.OZCALENDARDAYS_STATE = newStateMap;
 	};
 
+	/**
+	 * Scans the plugin state and removes the file path if found
+	 * @param filePath
+	 * @returns true if the file path is found and deleted
+	 */
 	removeFilePathFromState = (filePath: string): boolean => {
 		let changeFlag = false;
 		let newStateMap = this.OZCALENDARDAYS_STATE;
@@ -83,6 +93,11 @@ export default class OZCalendarPlugin extends Plugin {
 		return changeFlag;
 	};
 
+	/**
+	 * Scans the file provided for users date key and adds to the plugin state
+	 * @param file
+	 * @returns boolean (if any change happened, true)
+	 */
 	scanTFileDate = (file: TFile): boolean => {
 		let cache = this.app.metadataCache.getCache(file.path);
 		let changeFlag = false;
@@ -100,6 +115,9 @@ export default class OZCalendarPlugin extends Plugin {
 		return changeFlag;
 	};
 
+	/**
+	 * Use this function to force update the calendar and file list view
+	 */
 	calendarForceUpdate = () => {
 		window.dispatchEvent(
 			new CustomEvent(this.EVENT_TYPES.forceUpdate, {
@@ -134,11 +152,19 @@ export default class OZCalendarPlugin extends Plugin {
 	};
 
 	handleRename = (file: TFile, oldPath: string) => {
+		let changeFlag = false;
 		if (file instanceof TFile && file.extension === 'md') {
-			let changeFlag = this.removeFilePathFromState(oldPath);
-			let changeFlag2 = this.scanTFileDate(file);
-			if (changeFlag || changeFlag2) this.calendarForceUpdate();
+			for (let k of Object.keys(this.OZCALENDARDAYS_STATE)) {
+				for (let filePath of this.OZCALENDARDAYS_STATE[k]) {
+					if (filePath === oldPath) {
+						let oldIndex = this.OZCALENDARDAYS_STATE[k].indexOf(filePath);
+						this.OZCALENDARDAYS_STATE[k][oldIndex] = file.path;
+						changeFlag = true;
+					}
+				}
+			}
 		}
+		if (changeFlag) this.calendarForceUpdate();
 	};
 
 	handleDelete = (file: TAbstractFile) => {
