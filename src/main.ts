@@ -36,9 +36,9 @@ export default class OZCalendarPlugin extends Plugin {
 			this.OZCALENDARDAYS_STATE = this.getNotesWithDates();
 		});
 
-		this.app.metadataCache.on('changed', this.handleCacheChange);
-		this.app.vault.on('rename', this.handleRename);
-		this.app.vault.on('delete', this.handleDelete);
+		this.registerEvent(this.app.metadataCache.on('changed', this.handleCacheChange));
+		this.registerEvent(this.app.vault.on('rename', this.handleRename));
+		this.registerEvent(this.app.vault.on('delete', this.handleDelete));
 
 		// Add Event Handler for Custom Note Creation
 		document.on('contextmenu', this.dayMonthSelectorQuery, this.handleMonthDayContextMenu);
