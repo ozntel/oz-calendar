@@ -22,12 +22,9 @@ export class CreateNoteModal extends Modal {
 		const headerEl = contentEl.createEl('div', { text: 'Create Note' });
 		headerEl.addClass('modal-title');
 
-		let inputCss = 'width: 100%; height: 2.5em;';
-
 		// Input El
 		contentEl.createEl('p', { text: 'File Name:' });
-		const fileNameInputEl = contentEl.createEl('input');
-		fileNameInputEl.style.cssText = inputCss;
+		const fileNameInputEl = contentEl.createEl('input', { cls: 'oz-calendar-modal-inputel' });
 
 		let defFileNamePref = this.plugin.settings.defaultFileNamePrefix;
 		if (defFileNamePref !== '') {
@@ -40,20 +37,20 @@ export class CreateNoteModal extends Modal {
 		let folderInputEl: HTMLInputElement = null;
 		if (this.plugin.settings.showDestinationFolderDuringCreate) {
 			contentEl.createEl('p', { text: 'Destination Folder:' });
-			folderInputEl = contentEl.createEl('input');
+			folderInputEl = contentEl.createEl('input', { cls: 'oz-calendar-modal-inputel' });
 			new FolderSuggest(folderInputEl);
 			folderInputEl.value = this.plugin.settings.defaultFolder;
-			folderInputEl.style.cssText = inputCss;
 		}
 
 		// Additional Space
-		let addSpace = contentEl.createEl('div');
-		addSpace.style.cssText = 'height: 20px;';
+		let addSpace = contentEl.createEl('div', { cls: 'oz-calendar-modal-addspacediv ' });
 
 		// Create - Cancel Buttons
 		const createButton = contentEl.createEl('button', { text: 'Create Note' });
-		const cancelButton = contentEl.createEl('button', { text: 'Cancel' });
-		cancelButton.style.cssText = 'float: right;';
+		const cancelButton = contentEl.createEl('button', {
+			text: 'Cancel',
+			cls: 'oz-calendar-modal-float-right',
+		});
 		cancelButton.addEventListener('click', () => {
 			thisModal.close();
 		});

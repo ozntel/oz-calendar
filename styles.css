@@ -245,3 +245,16 @@ settings:
 }
 
 /*  END - Fixed Calendar */
+
+.oz-calendar-modal-inputel {
+	width: 100%;
+	height: 2.5em;
+}
+
+.oz-calendar-modal-addspacediv {
+	height: 20px;
+}
+
+.oz-calendar-modal-float-right {
+	float: right;
+}
