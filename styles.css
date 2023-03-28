@@ -14,7 +14,14 @@ settings:
     -
         id: oz-calendar-selected-daycolor
         title: Selected Day Text Color
-        description: Set the color of selected day in the month view, defaulted to the interactive-accent
+        description: Set the color of selected day in the month view, defaulted to text-normal
+        type: variable-color
+        format: hex
+        default: '#'
+    -
+        id: oz-calendar-selected-day-background
+        title: Selected Day Background Color
+        description: Set the color of selected day background in the month view, defaulted to the interactive-accent
         type: variable-color
         format: hex
         default: '#'
@@ -30,8 +37,9 @@ settings:
 .theme-light,
 .theme-dark {
 	--oz-calendar-weekend-color: #f76a6a;
-	--oz-calendar-selected-daycolor: var(----interactive-accent);
-	--oz-calendar-header-date-color: var(----interactive-accent);
+	--oz-calendar-selected-daycolor: var(--text-normal);
+	--oz-calendar-selected-day-background: var(--interactive-accent);
+	--oz-calendar-header-date-color: var(--interactive-accent);
 }
 
 .oz-cal-coffee-div,
@@ -50,6 +58,10 @@ settings:
 
 .oz-calendar-plugin-view .react-calendar__tile.react-calendar__month-view__days__day:hover {
 	background: var(--background-secondary-alt);
+}
+
+.oz-calendar-plugin-view .react-calendar__tile--active {
+	background-color: var(--oz-calendar-selected-day-background) !important;
 }
 
 .oz-calendar-plugin-view .react-calendar button:enabled:hover {
