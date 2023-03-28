@@ -10,6 +10,7 @@ import { CreateNoteModal } from 'modal';
 export default class OZCalendarPlugin extends Plugin {
 	settings: OZCalendarPluginSettings;
 	OZCALENDARDAYS_STATE: OZCalendarDaysMap = {};
+	initialScanCompleted: boolean = false;
 	EVENT_TYPES = {
 		forceUpdate: 'ozCalendarForceUpdate',
 	};
@@ -29,11 +30,18 @@ export default class OZCalendarPlugin extends Plugin {
 			return new OZCalendarView(leaf, this);
 		});
 
+		this.app.metadataCache.on('resolved', () => {
+			// Run only during initial vault load, changes are handled separately
+			if (!this.initialScanCompleted) {
+				this.OZCALENDARDAYS_STATE = this.getNotesWithDates();
+				this.initialScanCompleted = true;
+			}
+		});
+
 		this.app.workspace.onLayoutReady(() => {
 			if (this.settings.openViewOnStart) {
 				this.openOZCalendarLeaf({ showAfterAttach: true });
 			}
-			this.OZCALENDARDAYS_STATE = this.getNotesWithDates();
 		});
 
 		this.registerEvent(this.app.metadataCache.on('changed', this.handleCacheChange));
