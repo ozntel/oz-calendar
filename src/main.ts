@@ -35,6 +35,7 @@ export default class OZCalendarPlugin extends Plugin {
 			if (!this.initialScanCompleted) {
 				this.OZCALENDARDAYS_STATE = this.getNotesWithDates();
 				this.initialScanCompleted = true;
+				this.calendarForceUpdate();
 			}
 		});
 
