@@ -40,6 +40,7 @@ export default class OZCalendarPlugin extends Plugin {
 		});
 
 		this.app.workspace.onLayoutReady(() => {
+			this.OZCALENDARDAYS_STATE = this.getNotesWithDates();
 			if (this.settings.openViewOnStart) {
 				this.openOZCalendarLeaf({ showAfterAttach: true });
 			}
