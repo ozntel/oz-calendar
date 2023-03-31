@@ -70,7 +70,12 @@ export class CreateNoteModal extends Modal {
                     ---
                     `;
 					// Create the MD File and close the modal
-					await createNewMarkdownFile(this.plugin, defFolder, newFileName, defaultNewFileText);
+					await createNewMarkdownFile(
+						this.plugin,
+						defFolder,
+						newFileName,
+						this.plugin.settings.dateSource === 'yaml' ? defaultNewFileText : ''
+					);
 					thisModal.close();
 				} else {
 					new Notice('Folder couldnt be found in the Vault');

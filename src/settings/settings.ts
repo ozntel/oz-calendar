@@ -185,6 +185,15 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 
 		containerEl.createEl('h2', { text: 'New Note Settings' });
 
+		containerEl.createEl('p', {
+			text: `
+                The plugin will add the YAML key and date to the newly created note using the date format provided above 
+                if Date Source is YAML. However, auto YAML key generation for the notes is going to be disabled if you use
+                File Name as date source.
+            `,
+			cls: 'setting-item-description',
+		});
+
 		new Setting(this.containerEl)
 			.setName('Default Folder Location')
 			.setDesc('Select the default folder, under which the new files should be saved when use plugin + icon')
