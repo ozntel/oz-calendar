@@ -50,6 +50,7 @@ export default class OZCalendarPlugin extends Plugin {
 		this.registerEvent(this.app.metadataCache.on('changed', this.handleCacheChange));
 		this.registerEvent(this.app.vault.on('rename', this.handleRename));
 		this.registerEvent(this.app.vault.on('delete', this.handleDelete));
+		this.registerEvent(this.app.vault.on('create', this.handleCreate));
 
 		// Add Event Handler for Custom Note Creation
 		document.on('contextmenu', this.dayMonthSelectorQuery, this.handleMonthDayContextMenu);
@@ -240,6 +241,23 @@ export default class OZCalendarPlugin extends Plugin {
 	handleDelete = (file: TAbstractFile) => {
 		let changeFlag = this.removeFilePathFromState(file.path);
 		if (changeFlag) this.calendarForceUpdate();
+	};
+
+	handleCreate = (file: TAbstractFile) => {
+		if (this.settings.dateSource === 'filename') {
+			let cleanFileName = file.name.substring(0, this.settings.dateFormat.length);
+			if (dayjs(cleanFileName, this.settings.dateFormat, true).isValid()) {
+				let parsedDayISOString = dayjs(cleanFileName, this.settings.dateFormat).format('YYYY-MM-DD');
+				if (parsedDayISOString in this.OZCALENDARDAYS_STATE) {
+					this.OZCALENDARDAYS_STATE[parsedDayISOString] = [
+						...this.OZCALENDARDAYS_STATE[parsedDayISOString],
+						file.path,
+					];
+				} else {
+					this.OZCALENDARDAYS_STATE[parsedDayISOString] = [file.path];
+				}
+			}
+		}
 	};
 
 	/* ------------ OTHER FUNCTIONS ------------ */
