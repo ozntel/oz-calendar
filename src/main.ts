@@ -82,6 +82,20 @@ export default class OZCalendarPlugin extends Plugin {
 				);
 			},
 		});
+
+		this.addCommand({
+			id: 'oz-calendar-today',
+			name: 'Go to Today',
+			callback: () => {
+				window.dispatchEvent(
+					new CustomEvent(this.EVENT_TYPES.changeDate, {
+						detail: {
+							action: 'today' as DayChangeCommandAction,
+						},
+					})
+				);
+			},
+		});
 	}
 
 	onunload() {

@@ -40,6 +40,8 @@ export default function MyCalendar(params: { plugin: OZCalendarPlugin }) {
 			newDate = dayjs(currentSelectedDay).add(1, 'day');
 		} else if (action === 'previous-day') {
 			newDate = dayjs(currentSelectedDay).add(-1, 'day');
+		} else if (action === 'today') {
+			newDate = dayjs();
 		}
 		setSelectedDay(newDate.toDate());
 	};
