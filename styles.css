@@ -270,3 +270,7 @@ settings:
 .oz-calendar-modal-float-right {
 	float: right;
 }
+
+.oz-calendar-custom-hidden {
+	display: none !important;
+}

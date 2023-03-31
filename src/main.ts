@@ -139,26 +139,30 @@ export default class OZCalendarPlugin extends Plugin {
 	/* ------------ HANDLE VAULT CHANGES - LISTENER FUNCTIONS ------------ */
 
 	handleCacheChange = (file: TFile, data: string, cache: CachedMetadata) => {
-		this.removeFilePathFromState(file.path);
-		if (cache && cache.frontmatter) {
-			let fm = cache.frontmatter;
-			for (let k of Object.keys(cache.frontmatter)) {
-				if (k === this.settings.yamlKey) {
-					let fmValue = fm[k];
-					let parsedDayISOString = dayjs(fmValue, this.settings.dateFormat).format('YYYY-MM-DD');
-					// If date doesn't exist, create a new one
-					if (!(parsedDayISOString in this.OZCALENDARDAYS_STATE)) {
-						this.addFilePathToState(parsedDayISOString, file.path);
-					} else {
-						// if date exists and note is not in the date list
-						if (!(file.path in this.OZCALENDARDAYS_STATE[parsedDayISOString])) {
+		if (this.settings.dateSource === 'yaml') {
+			this.removeFilePathFromState(file.path);
+			if (cache && cache.frontmatter) {
+				let fm = cache.frontmatter;
+				for (let k of Object.keys(cache.frontmatter)) {
+					if (k === this.settings.yamlKey) {
+						let fmValue = fm[k];
+						let parsedDayISOString = dayjs(fmValue, this.settings.dateFormat).format('YYYY-MM-DD');
+						// If date doesn't exist, create a new one
+						if (!(parsedDayISOString in this.OZCALENDARDAYS_STATE)) {
 							this.addFilePathToState(parsedDayISOString, file.path);
+						} else {
+							// if date exists and note is not in the date list
+							if (!(file.path in this.OZCALENDARDAYS_STATE[parsedDayISOString])) {
+								this.addFilePathToState(parsedDayISOString, file.path);
+							}
 						}
 					}
 				}
 			}
+			this.calendarForceUpdate();
+		} else if (this.settings.dateSource === 'filename') {
+			// No action needed
 		}
-		this.calendarForceUpdate();
 	};
 
 	handleRename = (file: TFile, oldPath: string) => {
@@ -168,12 +172,39 @@ export default class OZCalendarPlugin extends Plugin {
 				for (let filePath of this.OZCALENDARDAYS_STATE[k]) {
 					if (filePath === oldPath) {
 						let oldIndex = this.OZCALENDARDAYS_STATE[k].indexOf(filePath);
-						this.OZCALENDARDAYS_STATE[k][oldIndex] = file.path;
-						changeFlag = true;
+						if (this.settings.dateSource === 'yaml') {
+							this.OZCALENDARDAYS_STATE[k][oldIndex] = file.path;
+							changeFlag = true;
+						} else if (this.settings.dateSource === 'filename') {
+							this.OZCALENDARDAYS_STATE[k].splice(oldIndex, 1);
+							changeFlag = true;
+						}
 					}
 				}
 			}
 		}
+
+		// Make sure that you scan the new file name for filename source
+		if (file.name.length >= this.settings.dateFormat.length) {
+			let cleanFileName = file.name.substring(0, this.settings.dateFormat.length);
+			if (
+				this.settings.dateSource === 'filename' &&
+				dayjs(cleanFileName, this.settings.dateFormat, true).isValid()
+			) {
+				let parsedDayISOString = dayjs(cleanFileName, this.settings.dateFormat).format('YYYY-MM-DD');
+				if (parsedDayISOString in this.OZCALENDARDAYS_STATE) {
+					this.OZCALENDARDAYS_STATE[parsedDayISOString] = [
+						...this.OZCALENDARDAYS_STATE[parsedDayISOString],
+						file.path,
+					];
+				} else {
+					this.OZCALENDARDAYS_STATE[parsedDayISOString] = [file.path];
+				}
+				changeFlag = true;
+			}
+		}
+
+		// If change happened force update the component
 		if (changeFlag) this.calendarForceUpdate();
 	};
 
@@ -209,20 +240,38 @@ export default class OZCalendarPlugin extends Plugin {
 		let mdFiles = this.app.vault.getMarkdownFiles();
 		let OZCalendarDays: OZCalendarDaysMap = {};
 		for (let mdFile of mdFiles) {
-			// Get the file Cache
-			let fileCache = app.metadataCache.getFileCache(mdFile);
-			// Check if there is Frontmatter
-			if (fileCache && fileCache.frontmatter) {
-				let fm = fileCache.frontmatter;
-				// Check the FM keys vs the provided key by the user in settings
-				for (let k of Object.keys(fm)) {
-					if (k === this.settings.yamlKey) {
-						let fmValue = (fm[k] as string).substring(0, this.settings.dateFormat.length);
-						// Parse the date with provided date format
-						let parsedDayJsDate = dayjs(fmValue, this.settings.dateFormat);
-						// Take only YYYY-MM-DD part fromt the date as String
-						let parsedDayISOString = parsedDayJsDate.format('YYYY-MM-DD');
-						// Check if it already exists
+			if (this.settings.dateSource === 'yaml') {
+				// Get the file Cache
+				let fileCache = app.metadataCache.getFileCache(mdFile);
+				// Check if there is Frontmatter
+				if (fileCache && fileCache.frontmatter) {
+					let fm = fileCache.frontmatter;
+					// Check the FM keys vs the provided key by the user in settings
+					for (let k of Object.keys(fm)) {
+						if (k === this.settings.yamlKey) {
+							let fmValue = (fm[k] as string).substring(0, this.settings.dateFormat.length);
+							// Parse the date with provided date format
+							let parsedDayJsDate = dayjs(fmValue, this.settings.dateFormat);
+							// Take only YYYY-MM-DD part fromt the date as String
+							let parsedDayISOString = parsedDayJsDate.format('YYYY-MM-DD');
+							// Check if it already exists
+							if (parsedDayISOString in OZCalendarDays) {
+								OZCalendarDays[parsedDayISOString] = [
+									...OZCalendarDays[parsedDayISOString],
+									mdFile.path,
+								];
+							} else {
+								OZCalendarDays[parsedDayISOString] = [mdFile.path];
+							}
+						}
+					}
+				}
+			} else if (this.settings.dateSource === 'filename') {
+				let dateFormatLength = this.settings.dateFormat.length;
+				if (mdFile.name.length >= dateFormatLength) {
+					let value = mdFile.name.substring(0, dateFormatLength);
+					if (dayjs(value, this.settings.dateFormat, true).isValid()) {
+						let parsedDayISOString = dayjs(value, this.settings.dateFormat).format('YYYY-MM-DD');
 						if (parsedDayISOString in OZCalendarDays) {
 							OZCalendarDays[parsedDayISOString] = [
 								...OZCalendarDays[parsedDayISOString],

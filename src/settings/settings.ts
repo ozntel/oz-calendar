@@ -4,9 +4,11 @@ import { FolderSuggest } from 'settings/suggestor';
 
 export type OpenFileBehaviourType = 'new-tab' | 'new-tab-group' | 'current-tab';
 export type SortingOption = 'name' | 'name-rev';
+export type DateSourceOption = 'filename' | 'yaml';
 
 export interface OZCalendarPluginSettings {
 	openViewOnStart: boolean;
+	dateSource: DateSourceOption;
 	yamlKey: string;
 	dateFormat: string;
 	defaultFolder: string;
@@ -19,6 +21,7 @@ export interface OZCalendarPluginSettings {
 
 export const DEFAULT_SETTINGS: OZCalendarPluginSettings = {
 	openViewOnStart: true,
+	dateSource: 'yaml',
 	yamlKey: 'created',
 	dateFormat: 'YYYY-MM-DD hh:mm:ss',
 	defaultFolder: '/',
@@ -120,6 +123,35 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 		});
 
 		new Setting(containerEl)
+			.setName('Date Source')
+			.setDesc(
+				`Select the date source to be used in each folder. It can be either YAML Key or File Name.
+                Depending on what you provide within the date format, it will try to parse the date source.`
+			)
+			.addDropdown((dropdown) => {
+				dropdown
+					.addOption('filename', 'File Name')
+					.addOption('yaml', 'YAML Key')
+					.setValue(this.plugin.settings.dateSource)
+					.onChange((newValue: DateSourceOption) => {
+						this.plugin.settings.dateSource = newValue;
+						this.plugin.saveSettings();
+						this.plugin.OZCALENDARDAYS_STATE = this.plugin.getNotesWithDates();
+						this.plugin.calendarForceUpdate();
+						// If YAML selected, show the YAML key below, or hide if changed back to filename
+						let yamlKeySettingEl = document.querySelector('.oz-calendar-setting-yaml-key-value');
+						if (yamlKeySettingEl) {
+							if (newValue === 'filename') {
+								yamlKeySettingEl.addClass('oz-calendar-custom-hidden');
+							} else {
+								yamlKeySettingEl.removeClass('oz-calendar-custom-hidden');
+							}
+						}
+					});
+			});
+
+		let yamlKeySetting = new Setting(containerEl)
+			.setClass('oz-calendar-setting-yaml-key-value')
 			.setName('YAML Key')
 			.setDesc('Set the YAML Key that should be used for displaying in the calendar')
 			.addText((text) => {
@@ -128,6 +160,8 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 					this.plugin.saveSettings();
 				});
 			});
+
+		if (this.plugin.settings.dateSource === 'filename') yamlKeySetting.setClass('oz-calendar-custom-hidden');
 
 		new Setting(containerEl)
 			.setName('Date Format')
