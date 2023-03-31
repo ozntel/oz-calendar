@@ -258,7 +258,7 @@ export default class OZCalendarPlugin extends Plugin {
 	};
 
 	handleCreate = (file: TAbstractFile) => {
-		if (this.settings.dateSource === 'filename') {
+		if (file instanceof TFile && file.extension === 'md' && this.settings.dateSource === 'filename') {
 			let cleanFileName = file.name.substring(0, this.settings.dateFormat.length);
 			if (dayjs(cleanFileName, this.settings.dateFormat, true).isValid()) {
 				let parsedDayISOString = dayjs(cleanFileName, this.settings.dateFormat).format('YYYY-MM-DD');
