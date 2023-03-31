@@ -271,6 +271,7 @@ export default class OZCalendarPlugin extends Plugin {
 					this.OZCALENDARDAYS_STATE[parsedDayISOString] = [file.path];
 				}
 			}
+			this.calendarForceUpdate();
 		}
 	};
 
