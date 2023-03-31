@@ -2,7 +2,7 @@ import { CachedMetadata, Menu, Plugin, TAbstractFile, TFile, addIcon } from 'obs
 import { OZCalendarView, VIEW_TYPE } from 'view';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import { OZCalendarDaysMap } from 'types';
+import { DayChangeCommandAction, OZCalendarDaysMap } from 'types';
 import { OZCAL_ICON } from './util/icons';
 import { OZCalendarPluginSettings, DEFAULT_SETTINGS, OZCalendarPluginSettingsTab } from './settings/settings';
 import { CreateNoteModal } from 'modal';
@@ -13,6 +13,7 @@ export default class OZCalendarPlugin extends Plugin {
 	initialScanCompleted: boolean = false;
 	EVENT_TYPES = {
 		forceUpdate: 'ozCalendarForceUpdate',
+		changeDate: 'ozCalendarChangeDate',
 	};
 
 	dayMonthSelectorQuery = '.oz-calendar-plugin-view .react-calendar__tile.react-calendar__month-view__days__day';
@@ -52,6 +53,34 @@ export default class OZCalendarPlugin extends Plugin {
 
 		// Add Event Handler for Custom Note Creation
 		document.on('contextmenu', this.dayMonthSelectorQuery, this.handleMonthDayContextMenu);
+
+		this.addCommand({
+			id: 'oz-calendar-next-day',
+			name: 'Go to Next Day',
+			callback: () => {
+				window.dispatchEvent(
+					new CustomEvent(this.EVENT_TYPES.changeDate, {
+						detail: {
+							action: 'next-day' as DayChangeCommandAction,
+						},
+					})
+				);
+			},
+		});
+
+		this.addCommand({
+			id: 'oz-calendar-previous-day',
+			name: 'Go to Previous Day',
+			callback: () => {
+				window.dispatchEvent(
+					new CustomEvent(this.EVENT_TYPES.changeDate, {
+						detail: {
+							action: 'previous-day' as DayChangeCommandAction,
+						},
+					})
+				);
+			},
+		});
 	}
 
 	onunload() {

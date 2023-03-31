@@ -5,6 +5,7 @@ import OZCalendarPlugin from '../main';
 import NoteListComponent from './noteList';
 import dayjs from 'dayjs';
 import useForceUpdate from 'hooks/forceUpdate';
+import { DayChangeCommandAction } from 'types';
 
 export default function MyCalendar(params: { plugin: OZCalendarPlugin }) {
 	const { plugin } = params;
@@ -16,10 +17,32 @@ export default function MyCalendar(params: { plugin: OZCalendarPlugin }) {
 
 	useEffect(() => {
 		window.addEventListener(plugin.EVENT_TYPES.forceUpdate, forceUpdate);
+		window.addEventListener(plugin.EVENT_TYPES.changeDate, changeDate);
 		return () => {
 			window.removeEventListener(plugin.EVENT_TYPES.forceUpdate, forceUpdate);
+			window.removeEventListener(plugin.EVENT_TYPES.changeDate, changeDate);
 		};
 	}, []);
+
+	const changeDate = (e: CustomEvent) => {
+		let action = e.detail.action as DayChangeCommandAction;
+		let currentSelectedDay = selectedDay;
+
+		// Event listener is not capable of getting the updates after event listener is added
+		// This is created to capture current state value during the custom event dispatch
+		setSelectedDay((selectedDay) => {
+			currentSelectedDay = selectedDay;
+			return selectedDay;
+		});
+
+		let newDate = dayjs(currentSelectedDay);
+		if (action === 'next-day') {
+			newDate = dayjs(currentSelectedDay).add(1, 'day');
+		} else if (action === 'previous-day') {
+			newDate = dayjs(currentSelectedDay).add(-1, 'day');
+		}
+		setSelectedDay(newDate.toDate());
+	};
 
 	const customTileContent = ({ date, view }: CalendarTileProperties) => {
 		if (view === 'month') {
