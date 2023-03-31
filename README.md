@@ -1,12 +1,14 @@
 # OZ Calendar Plugin
 
-If you like the see your notes on a Calendar and easily find them using a certain date, you are at the right place. This plugin is created to help users easily view notes on Calendar using any YAML key with a custom date value. You define the YAML key and Date Format to be used. Follow the **Configure** steps and you are ready to go.
+If you like the see your notes on a Calendar and easily find them using a certain date, you are at the right place. This plugin is created to help users easily view notes on Calendar using any YAML key or File Name with a custom date value. You define the YAML key and Date Format to be used. Or you can simply use the file name with your custom date format. Follow the **Configure** steps depending on your choice and you are ready to go.
 
 ## Sample View
 
 <img src="https://github.com/ozntel/oz-calendar/blob/master/img/OZ-Calendar-Sample-Img-01.png?raw=true" width="250px"/>
 
 ## Configure
+
+### 01 YAML Option as Date Source
 
 1. Go to the plugin settings
 2. Define the **YAML** key you want to use as a date field. The default key is **created**
@@ -22,6 +24,17 @@ created: 2023-03-10 09:48:22
 ```
 
 You can use any YAML key instead of "created" and any date format value for the key.
+
+### 02 File Name Option as Date Source
+
+The default date source is the YAML Key ("created") as mentioned above. If you want to use the file name as date source that feeds the calendar:
+
+1. Go to the plugin settings
+2. Change Date Source from **YAML** to **File Name** since the plugin has **YAML** key as a default date source
+3. Make sure that you adjust the default date format (**Important**: The default date format has special characters that is not supported for file name like colon that needs to be adjusted for File Name option)
+4. After these changes, use **Reload Plugin** option to activate the changes in the vault.
+
+> Both YAML and File Name options can include additional characters in the file name. As long as the custom date format defined in the plugin settings is at the beginning of the YAML key or File Name, the plugin will be smart enough to parse only the beginning of the key/filename. For instance, if you have a file name '**2023-03-10 This is the file**' and your date format defined in the plugin settings is **YYYY-MM-DD**, it will be parsed just fine in the calendar.
 
 ## Create File Option
 
