@@ -5,6 +5,7 @@ import { FolderSuggest } from 'settings/suggestor';
 export type OpenFileBehaviourType = 'new-tab' | 'new-tab-group' | 'current-tab';
 export type SortingOption = 'name' | 'name-rev';
 export type DateSourceOption = 'filename' | 'yaml';
+export type NewNoteDateType = 'current-date' | 'active-date';
 
 export interface OZCalendarPluginSettings {
 	openViewOnStart: boolean;
@@ -17,6 +18,7 @@ export interface OZCalendarPluginSettings {
 	showDestinationFolderDuringCreate: boolean;
 	openFileBehaviour: OpenFileBehaviourType;
 	sortingOption: SortingOption;
+	newNoteDate: NewNoteDateType;
 }
 
 export const DEFAULT_SETTINGS: OZCalendarPluginSettings = {
@@ -30,6 +32,7 @@ export const DEFAULT_SETTINGS: OZCalendarPluginSettings = {
 	showDestinationFolderDuringCreate: true,
 	openFileBehaviour: 'current-tab',
 	sortingOption: 'name',
+	newNoteDate: 'current-date',
 };
 
 export class OZCalendarPluginSettingsTab extends PluginSettingTab {
@@ -194,7 +197,25 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 			cls: 'setting-item-description',
 		});
 
-		new Setting(this.containerEl)
+		new Setting(containerEl)
+			.setName('New Note Date')
+			.setDesc(
+				`
+                Define the default behaviour for new note button if it should create under the active date or current date (today).
+                This setting will drive the date for the YAML Key value and File Name.
+                `
+			)
+			.addDropdown((dropdown) => {
+				dropdown
+					.addOption('active-date', 'Active Date (Selected)')
+					.addOption('current-date', 'Current Date (Today)')
+					.onChange((newValue: NewNoteDateType) => {
+						this.plugin.settings.newNoteDate = newValue;
+						this.plugin.saveSettings();
+					});
+			});
+
+		new Setting(containerEl)
 			.setName('Default Folder Location')
 			.setDesc('Select the default folder, under which the new files should be saved when use plugin + icon')
 			.addSearch((cb) => {

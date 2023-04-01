@@ -81,7 +81,10 @@ export default function NoteListComponent(params: NoteListComponentParams) {
 						size={20}
 						aria-label="Create note for today"
 						onClick={() => {
-							let newFileModal = new CreateNoteModal(plugin, new Date());
+							let newFileModal = new CreateNoteModal(
+								plugin,
+								plugin.settings.newNoteDate === 'current-date' ? new Date() : selectedDay
+							);
 							newFileModal.open();
 						}}
 					/>
