@@ -214,6 +214,7 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 				dropdown
 					.addOption('active-date', 'Active Date (Selected)')
 					.addOption('current-date', 'Current Date (Today)')
+					.setValue(this.plugin.settings.newNoteDate)
 					.onChange((newValue: NewNoteDateType) => {
 						this.plugin.settings.newNoteDate = newValue;
 						this.plugin.saveSettings();
