@@ -115,7 +115,7 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 					});
 			});
 
-		containerEl.createEl('h2', { text: 'YAML and Date Format' });
+		containerEl.createEl('h2', { text: 'YAML, File Name and Date Format Settings' });
 
 		containerEl.createEl('p', {
 			text: `
@@ -168,7 +168,12 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Date Format')
-			.setDesc('Set the Date format you are using within the YAML key provided above')
+			.setDesc(
+				`Set the Date format you are using within the YAML key or File Name provided above. 
+                If you are using File Name, make sure that you dont have any special characters since Obsidian doesnt
+                support special characters in the file name like colon. Reload the plugin using the following button
+                in case you change this value`
+			)
 			.addText((text) => {
 				text.setValue(this.plugin.settings.dateFormat).onChange((newValue) => {
 					this.plugin.settings.dateFormat = newValue;
