@@ -14,6 +14,7 @@ export default class OZCalendarPlugin extends Plugin {
 	EVENT_TYPES = {
 		forceUpdate: 'ozCalendarForceUpdate',
 		changeDate: 'ozCalendarChangeDate',
+		createNote: 'ozCalendarCreateNote',
 	};
 
 	dayMonthSelectorQuery = '.oz-calendar-plugin-view .react-calendar__tile.react-calendar__month-view__days__day';
@@ -92,6 +93,18 @@ export default class OZCalendarPlugin extends Plugin {
 						detail: {
 							action: 'today' as DayChangeCommandAction,
 						},
+					})
+				);
+			},
+		});
+
+		this.addCommand({
+			id: 'oz-calendar-new-note',
+			name: 'Create a New Note',
+			callback: () => {
+				window.dispatchEvent(
+					new CustomEvent(this.EVENT_TYPES.createNote, {
+						detail: {},
 					})
 				);
 			},

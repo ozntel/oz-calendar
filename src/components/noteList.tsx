@@ -13,12 +13,13 @@ interface NoteListComponentParams {
 	selectedDay: Date;
 	setSelectedDay: (selectedDay: Date) => void;
 	setActiveStartDate: (newActiveStartDate: Date) => void;
+	createNote: () => void;
 	plugin: OZCalendarPlugin;
 	forceValue: number;
 }
 
 export default function NoteListComponent(params: NoteListComponentParams) {
-	const { setSelectedDay, selectedDay, plugin, setActiveStartDate, forceValue } = params;
+	const { setSelectedDay, selectedDay, plugin, setActiveStartDate, forceValue, createNote } = params;
 
 	const setNewSelectedDay = (nrChange: number) => {
 		let newDate = dayjs(selectedDay).add(nrChange, 'day');
@@ -77,17 +78,7 @@ export default function NoteListComponent(params: NoteListComponentParams) {
 		<>
 			<div className="oz-calendar-notelist-header-container">
 				<div className="oz-calendar-nav-action-plus">
-					<RiAddCircleLine
-						size={20}
-						aria-label="Create note for today"
-						onClick={() => {
-							let newFileModal = new CreateNoteModal(
-								plugin,
-								plugin.settings.newNoteDate === 'current-date' ? new Date() : selectedDay
-							);
-							newFileModal.open();
-						}}
-					/>
+					<RiAddCircleLine size={20} aria-label="Create note for today" onClick={createNote} />
 				</div>
 				<div className="oz-calendar-nav-action-left">
 					<BsArrowLeft size={22} aria-label="Go to previous day" onClick={() => setNewSelectedDay(-1)} />

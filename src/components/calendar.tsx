@@ -6,6 +6,7 @@ import NoteListComponent from './noteList';
 import dayjs from 'dayjs';
 import useForceUpdate from 'hooks/forceUpdate';
 import { DayChangeCommandAction } from 'types';
+import { CreateNoteModal } from 'modal';
 
 export default function MyCalendar(params: { plugin: OZCalendarPlugin }) {
 	const { plugin } = params;
@@ -18,11 +19,21 @@ export default function MyCalendar(params: { plugin: OZCalendarPlugin }) {
 	useEffect(() => {
 		window.addEventListener(plugin.EVENT_TYPES.forceUpdate, forceUpdate);
 		window.addEventListener(plugin.EVENT_TYPES.changeDate, changeDate);
+		window.addEventListener(plugin.EVENT_TYPES.createNote, createNote);
 		return () => {
 			window.removeEventListener(plugin.EVENT_TYPES.forceUpdate, forceUpdate);
 			window.removeEventListener(plugin.EVENT_TYPES.changeDate, changeDate);
+			window.removeEventListener(plugin.EVENT_TYPES.createNote, createNote);
 		};
 	}, []);
+
+	const createNote = () => {
+		let newFileModal = new CreateNoteModal(
+			plugin,
+			plugin.settings.newNoteDate === 'current-date' ? new Date() : selectedDay
+		);
+		newFileModal.open();
+	};
 
 	const changeDate = (e: CustomEvent) => {
 		let action = e.detail.action as DayChangeCommandAction;
@@ -94,6 +105,7 @@ export default function MyCalendar(params: { plugin: OZCalendarPlugin }) {
 					setActiveStartDate={setActiveStartDate}
 					plugin={plugin}
 					forceValue={forceValue}
+					createNote={createNote}
 				/>
 			</>
 		</div>
