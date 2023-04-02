@@ -47,9 +47,15 @@ You can define this in the plugin settings:
 -   You can right-click any date in the calendar view to create a note for a certain date
 -   The plus icon is defaulted to create a note for today
 
-## Commands for Day Navigation
+## Plugin Commands
 
-You can use directly **Go to Previous Day** and **Go to Next Day** commands to navigate between dates or assign any hotkey to change the active date easily from your keyboard.
+### Day Navigation
+
+You can use directly **Go to Previous Day**, **Go to Next Day** and **Go to Today** commands to navigate between dates. You can also assign hotkey to these commands to change the active date easily from your keyboard.
+
+### New Note Creation
+
+You can use the **Create a New Note** command to trigger the create a new note action customized for the plugin. Same as day navigation, you can assign hotkey to this command for easy keyboard navigation.
 
 ## Style Settings Plugin Support
 
