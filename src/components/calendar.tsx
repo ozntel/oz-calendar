@@ -28,21 +28,22 @@ export default function MyCalendar(params: { plugin: OZCalendarPlugin }) {
 	}, []);
 
 	const createNote = () => {
-		let currentSelectedDay = selectedDay;
+		let currentSelectedDay: Date = selectedDay;
+		let dateNow: Date = null;
 		setSelectedDay((selectedDay) => {
 			currentSelectedDay = selectedDay;
+			dateNow = new Date();
 			return selectedDay;
 		});
 		// Add now time details to the existing date if current date
-		if (plugin.settings.newNoteDate === 'current-date') {
-			let dateNow = new Date();
+		if (plugin.settings.newNoteDate === 'active-date') {
 			currentSelectedDay.setHours(dateNow.getHours());
 			currentSelectedDay.setMinutes(dateNow.getMinutes());
 			currentSelectedDay.setMilliseconds(dateNow.getMilliseconds());
 		}
 		let newFileModal = new CreateNoteModal(
 			plugin,
-			plugin.settings.newNoteDate === 'current-date' ? new Date() : selectedDay
+			plugin.settings.newNoteDate === 'current-date' ? dateNow : currentSelectedDay
 		);
 		newFileModal.open();
 	};
