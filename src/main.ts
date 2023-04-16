@@ -9,6 +9,7 @@ import { CreateNoteModal } from 'modal';
 
 export default class OZCalendarPlugin extends Plugin {
 	settings: OZCalendarPluginSettings;
+	dayjs = dayjs;
 	OZCALENDARDAYS_STATE: OZCalendarDaysMap = {};
 	initialScanCompleted: boolean = false;
 	EVENT_TYPES = {
@@ -172,7 +173,7 @@ export default class OZCalendarPlugin extends Plugin {
 			let fm = cache.frontmatter;
 			for (let k of Object.keys(cache.frontmatter)) {
 				if (k === this.settings.yamlKey) {
-					let fmValue = fm[k];
+					let fmValue = String(fm[k]);
 					let parsedDayISOString = dayjs(fmValue, this.settings.dateFormat).format('YYYY-MM-DD');
 					this.addFilePathToState(parsedDayISOString, file.path);
 					changeFlag = true;
@@ -202,7 +203,7 @@ export default class OZCalendarPlugin extends Plugin {
 				let fm = cache.frontmatter;
 				for (let k of Object.keys(cache.frontmatter)) {
 					if (k === this.settings.yamlKey) {
-						let fmValue = fm[k];
+						let fmValue = String(fm[k]);
 						let parsedDayISOString = dayjs(fmValue, this.settings.dateFormat).format('YYYY-MM-DD');
 						// If date doesn't exist, create a new one
 						if (!(parsedDayISOString in this.OZCALENDARDAYS_STATE)) {
@@ -324,7 +325,7 @@ export default class OZCalendarPlugin extends Plugin {
 					// Check the FM keys vs the provided key by the user in settings
 					for (let k of Object.keys(fm)) {
 						if (k === this.settings.yamlKey) {
-							let fmValue = (fm[k] as string).substring(0, this.settings.dateFormat.length);
+							let fmValue = String(fm[k]).substring(0, this.settings.dateFormat.length);
 							// Parse the date with provided date format
 							let parsedDayJsDate = dayjs(fmValue, this.settings.dateFormat);
 							// Take only YYYY-MM-DD part fromt the date as String
