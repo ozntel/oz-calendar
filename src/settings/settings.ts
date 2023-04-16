@@ -2,7 +2,7 @@ import OZCalendarPlugin from 'main';
 import { PluginSettingTab, App, Setting } from 'obsidian';
 import { FolderSuggest } from 'settings/suggestor';
 
-export type OpenFileBehaviourType = 'new-tab' | 'new-tab-group' | 'current-tab';
+export type OpenFileBehaviourType = 'new-tab' | 'new-tab-group' | 'current-tab' | 'obsidian-default';
 export type SortingOption = 'name' | 'name-rev';
 export type DateSourceOption = 'filename' | 'yaml';
 export type NewNoteDateType = 'current-date' | 'active-date';
@@ -90,6 +90,7 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 			.setDesc('Select the behaviour you want to have when you click on file name in the calendar view')
 			.addDropdown((dropdown) => {
 				dropdown
+					.addOption('obsidian-default', "Obsidian's Default")
 					.addOption('new-tab', 'Open in a New Tab')
 					.addOption('new-tab-group', 'Open in a New Tab Group')
 					.addOption('current-tab', 'Open in the Active Tab')

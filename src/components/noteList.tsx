@@ -6,8 +6,7 @@ import { MdToday } from 'react-icons/md';
 import dayjs from 'dayjs';
 import OZCalendarPlugin from 'main';
 import { isMouseEvent, openFile } from '../util/utils';
-import { Menu, TFile } from 'obsidian';
-import { CreateNoteModal } from 'modal';
+import { Menu, TFile, Keymap } from 'obsidian';
 
 interface NoteListComponentParams {
 	selectedDay: Date;
@@ -36,15 +35,23 @@ export default function NoteListComponent(params: NoteListComponentParams) {
 		}
 	};
 
-	const openFilePath = (filePath: string) => {
+	const openFilePath = (e: React.MouseEvent<HTMLDivElement, MouseEvent>, filePath: string) => {
 		let abstractFile = plugin.app.vault.getAbstractFileByPath(filePath);
 		let openFileBehaviour = plugin.settings.openFileBehaviour;
-		if (abstractFile) {
+		if (abstractFile && abstractFile instanceof TFile) {
+			// Define the Default Open Behaviour by looking at the plugin settings
+			let openInNewLeaf: boolean = openFileBehaviour === 'new-tab';
+			let openInNewTabGroup: boolean = openFileBehaviour === 'new-tab-group';
+			if (openFileBehaviour === 'obsidian-default') {
+				openInNewLeaf = (e.ctrlKey || e.metaKey) && !(e.shiftKey || e.altKey);
+				openInNewTabGroup = (e.ctrlKey || e.metaKey) && (e.shiftKey || e.altKey);
+			}
+			// Open the file by using the open file behaviours above
 			openFile({
-				file: abstractFile as TFile,
+				file: abstractFile,
 				plugin: plugin,
-				newLeaf: openFileBehaviour === 'new-tab',
-				leafBySplit: openFileBehaviour === 'new-tab-group',
+				newLeaf: openInNewLeaf,
+				leafBySplit: openInNewTabGroup,
 			});
 		}
 	};
@@ -115,7 +122,7 @@ export default function NoteListComponent(params: NoteListComponentParams) {
 						<div
 							className="oz-calendar-note-line"
 							id={notePath}
-							onClick={() => openFilePath(notePath)}
+							onClick={(e) => openFilePath(e, notePath)}
 							onContextMenu={(e) => triggerFileContextMenu(e, notePath)}>
 							<HiOutlineDocumentText className="oz-calendar-note-line-icon" />
 							<span>{extractFileName(notePath)}</span>
