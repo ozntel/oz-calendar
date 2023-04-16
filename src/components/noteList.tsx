@@ -6,7 +6,8 @@ import { MdToday } from 'react-icons/md';
 import dayjs from 'dayjs';
 import OZCalendarPlugin from 'main';
 import { isMouseEvent, openFile } from '../util/utils';
-import { Menu, TFile, Keymap } from 'obsidian';
+import { Menu, TFile } from 'obsidian';
+import { VIEW_TYPE } from 'view';
 
 interface NoteListComponentParams {
 	selectedDay: Date;
@@ -71,7 +72,7 @@ export default function NoteListComponent(params: NoteListComponentParams) {
 		let abstractFile = plugin.app.vault.getAbstractFileByPath(filePath);
 		if (abstractFile) {
 			const fileMenu = new Menu();
-			plugin.app.workspace.trigger('file-menu', fileMenu, abstractFile, 'file-explorer');
+			plugin.app.workspace.trigger('file-menu', fileMenu, abstractFile, VIEW_TYPE);
 			if (isMouseEvent(e)) {
 				fileMenu.showAtPosition({ x: e.pageX, y: e.pageY });
 			} else {
