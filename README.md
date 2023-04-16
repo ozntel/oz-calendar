@@ -8,6 +8,8 @@ If you like the see your notes on a Calendar and easily find them using a certai
 
 ## Configure
 
+> IMPORTANT: Please make sure that you check the date formatting of the library, which is used by this plugin following [Day.js Date Format Link](https://day.js.org/docs/en/display/format).
+
 ### 01 YAML Option as Date Source
 
 1. Go to the plugin settings
