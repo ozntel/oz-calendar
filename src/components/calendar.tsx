@@ -87,8 +87,10 @@ export default function MyCalendar(params: { plugin: OZCalendarPlugin }) {
 		return null;
 	};
 
+	const fixedCalendarClass = plugin.settings.fixedCalendar ? 'fixed' : '';
+
 	return (
-		<div className={'oz-calendar-plugin-view' + (plugin.settings.fixedCalendar ? ' fixed' : '')}>
+		<div className={'oz-calendar-plugin-view ' + fixedCalendarClass}>
 			<Calendar
 				onChange={setSelectedDay}
 				value={selectedDay}
@@ -96,6 +98,8 @@ export default function MyCalendar(params: { plugin: OZCalendarPlugin }) {
 				minDetail="month"
 				view="month"
 				tileContent={customTileContent}
+				calendarType={plugin.settings.calendarType}
+				showFixedNumberOfWeeks={plugin.settings.fixedCalendar}
 				activeStartDate={activeStartDate}
 				onActiveStartDateChange={(props) => {
 					if (props.action === 'next') {

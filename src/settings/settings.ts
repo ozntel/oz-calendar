@@ -6,9 +6,11 @@ export type OpenFileBehaviourType = 'new-tab' | 'new-tab-group' | 'current-tab' 
 export type SortingOption = 'name' | 'name-rev';
 export type DateSourceOption = 'filename' | 'yaml';
 export type NewNoteDateType = 'current-date' | 'active-date';
+export type CalendarType = 'US' | 'ISO 8601';
 
 export interface OZCalendarPluginSettings {
 	openViewOnStart: boolean;
+	calendarType: CalendarType;
 	dateSource: DateSourceOption;
 	yamlKey: string;
 	dateFormat: string;
@@ -23,6 +25,7 @@ export interface OZCalendarPluginSettings {
 
 export const DEFAULT_SETTINGS: OZCalendarPluginSettings = {
 	openViewOnStart: true,
+	calendarType: 'ISO 8601',
 	dateSource: 'yaml',
 	yamlKey: 'created',
 	dateFormat: 'YYYY-MM-DD hh:mm:ss',
@@ -83,6 +86,25 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 					this.plugin.settings.openViewOnStart = newValue;
 					this.plugin.saveSettings();
 				});
+			});
+
+		new Setting(containerEl)
+			.setName('Calendar Type')
+			.setDesc(
+				`
+                Select the calendar type to be displayed. While the week in the US type starts from Sunday,
+                in the ISO 8601 type, the week starts from Monday`
+			)
+			.addDropdown((dropdown) => {
+				dropdown
+					.addOption('ISO 8601', 'ISO 8601')
+					.addOption('US', 'US')
+					.setValue(this.plugin.settings.calendarType)
+					.onChange((newValue: CalendarType) => {
+						this.plugin.settings.calendarType = newValue;
+						this.plugin.saveSettings();
+						this.plugin.calendarForceUpdate();
+					});
 			});
 
 		new Setting(containerEl)
