@@ -243,23 +243,17 @@ export default class OZCalendarPlugin extends Plugin {
 		}
 
 		// Make sure that you scan the new file name for filename source
-		if (file.name.length >= this.settings.dateFormat.length) {
-			let cleanFileName = file.name.substring(0, this.settings.dateFormat.length);
-			if (
-				this.settings.dateSource === 'filename' &&
-				dayjs(cleanFileName, this.settings.dateFormat, true).isValid()
-			) {
-				let parsedDayISOString = dayjs(cleanFileName, this.settings.dateFormat).format('YYYY-MM-DD');
-				if (parsedDayISOString in this.OZCALENDARDAYS_STATE) {
-					this.OZCALENDARDAYS_STATE[parsedDayISOString] = [
-						...this.OZCALENDARDAYS_STATE[parsedDayISOString],
-						file.path,
-					];
-				} else {
-					this.OZCALENDARDAYS_STATE[parsedDayISOString] = [file.path];
-				}
-				changeFlag = true;
+		if (this.settings.dateSource === 'filename' && dayjs(file.name, this.settings.dateFormat).isValid()) {
+			let parsedDayISOString = dayjs(file.name, this.settings.dateFormat).format('YYYY-MM-DD');
+			if (parsedDayISOString in this.OZCALENDARDAYS_STATE) {
+				this.OZCALENDARDAYS_STATE[parsedDayISOString] = [
+					...this.OZCALENDARDAYS_STATE[parsedDayISOString],
+					file.path,
+				];
+			} else {
+				this.OZCALENDARDAYS_STATE[parsedDayISOString] = [file.path];
 			}
+			changeFlag = true;
 		}
 
 		// If change happened force update the component
@@ -273,9 +267,8 @@ export default class OZCalendarPlugin extends Plugin {
 
 	handleCreate = (file: TAbstractFile) => {
 		if (file instanceof TFile && file.extension === 'md' && this.settings.dateSource === 'filename') {
-			let cleanFileName = file.name.substring(0, this.settings.dateFormat.length);
-			if (dayjs(cleanFileName, this.settings.dateFormat, true).isValid()) {
-				let parsedDayISOString = dayjs(cleanFileName, this.settings.dateFormat).format('YYYY-MM-DD');
+			if (dayjs(file.name, this.settings.dateFormat).isValid()) {
+				let parsedDayISOString = dayjs(file.name, this.settings.dateFormat).format('YYYY-MM-DD');
 				if (parsedDayISOString in this.OZCALENDARDAYS_STATE) {
 					this.OZCALENDARDAYS_STATE[parsedDayISOString] = [
 						...this.OZCALENDARDAYS_STATE[parsedDayISOString],
@@ -325,7 +318,7 @@ export default class OZCalendarPlugin extends Plugin {
 					// Check the FM keys vs the provided key by the user in settings
 					for (let k of Object.keys(fm)) {
 						if (k === this.settings.yamlKey) {
-							let fmValue = String(fm[k]).substring(0, this.settings.dateFormat.length);
+							let fmValue = String(fm[k]);
 							// Parse the date with provided date format
 							let parsedDayJsDate = dayjs(fmValue, this.settings.dateFormat);
 							// Take only YYYY-MM-DD part fromt the date as String
@@ -345,9 +338,8 @@ export default class OZCalendarPlugin extends Plugin {
 			} else if (this.settings.dateSource === 'filename') {
 				let dateFormatLength = this.settings.dateFormat.length;
 				if (mdFile.name.length >= dateFormatLength) {
-					let value = mdFile.name.substring(0, dateFormatLength);
-					if (dayjs(value, this.settings.dateFormat, true).isValid()) {
-						let parsedDayISOString = dayjs(value, this.settings.dateFormat).format('YYYY-MM-DD');
+					if (dayjs(mdFile.name, this.settings.dateFormat).isValid()) {
+						let parsedDayISOString = dayjs(mdFile.name, this.settings.dateFormat).format('YYYY-MM-DD');
 						if (parsedDayISOString in OZCalendarDays) {
 							OZCalendarDays[parsedDayISOString] = [
 								...OZCalendarDays[parsedDayISOString],
