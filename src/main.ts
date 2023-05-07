@@ -110,6 +110,14 @@ export default class OZCalendarPlugin extends Plugin {
 				);
 			},
 		});
+
+		this.addCommand({
+			id: 'oz-calendar-open-leaf',
+			name: 'Open OZ Calendar',
+			callback: () => {
+				this.openOZCalendarLeaf({ showAfterAttach: true });
+			},
+		});
 	}
 
 	onunload() {
