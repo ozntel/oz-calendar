@@ -87,6 +87,16 @@ export default function MyCalendar(params: { plugin: OZCalendarPlugin }) {
 		return null;
 	};
 
+	const customTileClass = ({ activeStartDate, date, view }: CalendarTileProperties) => {
+		// Assign a custom class in case the day is the current day
+		let today = new Date();
+		return date.getFullYear() === today.getFullYear() &&
+			date.getMonth() === today.getMonth() &&
+			date.getDate() === today.getDate()
+			? 'oz-calendar-plugin-today'
+			: '';
+	};
+
 	const fixedCalendarClass = plugin.settings.fixedCalendar ? 'fixed' : '';
 
 	return (
@@ -98,6 +108,7 @@ export default function MyCalendar(params: { plugin: OZCalendarPlugin }) {
 				minDetail="month"
 				view="month"
 				tileContent={customTileContent}
+				tileClassName={customTileClass}
 				calendarType={plugin.settings.calendarType}
 				showFixedNumberOfWeeks={plugin.settings.fixedCalendar}
 				activeStartDate={activeStartDate}

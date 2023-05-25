@@ -19,6 +19,13 @@ settings:
         format: hex
         default: '#'
     -
+        id: oz-calendar-current-day-color
+        title: Current Day (Today) Text Color
+        description: Set the color of the current day in the month view
+        type: variable-color
+        format: hex
+        default: '#'
+    -
         id: oz-calendar-selected-day-background
         title: Selected Day Background Color
         description: Set the color of selected day background in the month view, defaulted to the interactive-accent
@@ -40,6 +47,7 @@ settings:
 	--oz-calendar-selected-daycolor: var(--text-normal);
 	--oz-calendar-selected-day-background: var(--interactive-accent);
 	--oz-calendar-header-date-color: var(--interactive-accent);
+	--oz-calendar-current-day-color: #74dd58;
 }
 
 .oz-cal-coffee-div,
@@ -227,6 +235,11 @@ settings:
 	vertical-align: middle;
 	padding-bottom: 2px;
 	margin-right: 3px;
+}
+
+.oz-calendar-plugin-today abbr {
+	color: var(--oz-calendar-current-day-color);
+	font-weight: bold;
 }
 
 /* START - Fixed Calendar Except Note List - Scroll */
