@@ -287,3 +287,7 @@ settings:
 .oz-calendar-custom-hidden {
 	display: none !important;
 }
+
+.oz-calendar-note-line {
+	color: var(--text-muted);
+}
