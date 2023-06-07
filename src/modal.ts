@@ -46,10 +46,13 @@ export class CreateNoteModal extends Modal {
 		let addSpace = contentEl.createEl('div', { cls: 'oz-calendar-modal-addspacediv ' });
 
 		// Create - Cancel Buttons
-		const createButton = contentEl.createEl('button', { text: 'Create Note' });
+		const createButton = contentEl.createEl('button', {
+			text: 'Create Note',
+			cls: this.plugin.settings.newNoteCancelButtonReverse ? 'oz-calendar-modal-float-right' : '',
+		});
 		const cancelButton = contentEl.createEl('button', {
 			text: 'Cancel',
-			cls: 'oz-calendar-modal-float-right',
+			cls: this.plugin.settings.newNoteCancelButtonReverse ? '' : 'oz-calendar-modal-float-right',
 		});
 		cancelButton.addEventListener('click', () => {
 			thisModal.close();

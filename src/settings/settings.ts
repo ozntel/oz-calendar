@@ -21,6 +21,7 @@ export interface OZCalendarPluginSettings {
 	openFileBehaviour: OpenFileBehaviourType;
 	sortingOption: SortingOption;
 	newNoteDate: NewNoteDateType;
+	newNoteCancelButtonReverse: boolean;
 }
 
 export const DEFAULT_SETTINGS: OZCalendarPluginSettings = {
@@ -36,6 +37,7 @@ export const DEFAULT_SETTINGS: OZCalendarPluginSettings = {
 	openFileBehaviour: 'current-tab',
 	sortingOption: 'name',
 	newNoteDate: 'current-date',
+	newNoteCancelButtonReverse: false,
 };
 
 export class OZCalendarPluginSettingsTab extends PluginSettingTab {
@@ -282,6 +284,18 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 			.addToggle((toggle) => {
 				toggle.setValue(this.plugin.settings.showDestinationFolderDuringCreate).onChange((newValue) => {
 					this.plugin.settings.showDestinationFolderDuringCreate = newValue;
+					this.plugin.saveSettings();
+				});
+			});
+
+		new Setting(containerEl)
+			.setName('Reverse direction of Cancel and New Note Buttons')
+			.setDesc(
+				`Enable this setting to change the direction of Cancel and New Note buttons within the New Note Creation Modal`
+			)
+			.addToggle((toggle) => {
+				toggle.setValue(this.plugin.settings.newNoteCancelButtonReverse).onChange((newValue) => {
+					this.plugin.settings.newNoteCancelButtonReverse = newValue;
 					this.plugin.saveSettings();
 				});
 			});
