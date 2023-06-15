@@ -121,7 +121,14 @@ export default function NoteListComponent(params: NoteListComponentParams) {
 				{selectedDayNotes.map((notePath) => {
 					return (
 						<div
-							className="oz-calendar-note-line"
+							className={
+								'oz-calendar-note-line' +
+								(plugin.settings.fileNameOverflowBehaviour == 'scroll'
+									? ' oz-calendar-overflow-scroll'
+									: plugin.settings.fileNameOverflowBehaviour == 'hide'
+									? ' oz-calendar-overflow-hide'
+									: '')
+							}
 							id={notePath}
 							onClick={(e) => openFilePath(e, notePath)}
 							onContextMenu={(e) => triggerFileContextMenu(e, notePath)}>

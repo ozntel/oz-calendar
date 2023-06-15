@@ -291,3 +291,14 @@ settings:
 .oz-calendar-note-line {
 	color: var(--text-muted);
 }
+
+.oz-calendar-overflow-scroll {
+	overflow: scroll;
+	white-space: nowrap;
+}
+
+.oz-calendar-overflow-hide {
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: nowrap;
+}

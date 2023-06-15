@@ -7,6 +7,7 @@ export type SortingOption = 'name' | 'name-rev';
 export type DateSourceOption = 'filename' | 'yaml';
 export type NewNoteDateType = 'current-date' | 'active-date';
 export type CalendarType = 'US' | 'ISO 8601';
+export type OverflowBehaviour = 'scroll' | 'hide' | 'next-line';
 
 export interface OZCalendarPluginSettings {
 	openViewOnStart: boolean;
@@ -22,6 +23,7 @@ export interface OZCalendarPluginSettings {
 	sortingOption: SortingOption;
 	newNoteDate: NewNoteDateType;
 	newNoteCancelButtonReverse: boolean;
+	fileNameOverflowBehaviour: OverflowBehaviour;
 }
 
 export const DEFAULT_SETTINGS: OZCalendarPluginSettings = {
@@ -38,6 +40,7 @@ export const DEFAULT_SETTINGS: OZCalendarPluginSettings = {
 	sortingOption: 'name',
 	newNoteDate: 'current-date',
 	newNoteCancelButtonReverse: false,
+	fileNameOverflowBehaviour: 'hide',
 };
 
 export class OZCalendarPluginSettingsTab extends PluginSettingTab {
@@ -320,6 +323,22 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 					this.plugin.saveSettings();
 					this.plugin.calendarForceUpdate();
 				});
+			});
+
+		new Setting(containerEl)
+			.setName('File Names Overflow Behaviour')
+			.setDesc('Change the default behaviour for file names when they dont fit to the view')
+			.addDropdown((dropdown) => {
+				dropdown
+					.addOption('hide', 'Hide Overflow')
+					.addOption('scroll', 'Scroll Overflow')
+					.addOption('next-line', 'Show Overflow in the Next Line')
+					.setValue(this.plugin.settings.fileNameOverflowBehaviour)
+					.onChange((newValue: OverflowBehaviour) => {
+						this.plugin.settings.fileNameOverflowBehaviour = newValue;
+						this.plugin.saveSettings();
+						this.plugin.calendarForceUpdate();
+					});
 			});
 	}
 }
