@@ -111,7 +111,11 @@ export default function NoteListComponent(params: NoteListComponentParams) {
 					/>
 				</div>
 			</div>
-			<div className="oz-calendar-notelist-container">
+			<div
+				className={
+					'oz-calendar-notelist-container ' +
+					(plugin.settings.fileNameOverflowBehaviour == 'scroll' ? 'oz-calendar-overflow-scroll' : '')
+				}>
 				{selectedDayNotes.length === 0 && (
 					<div className="oz-calendar-note-no-note">
 						<RiPhoneFindLine className="oz-calendar-no-note-icon" />
@@ -123,9 +127,7 @@ export default function NoteListComponent(params: NoteListComponentParams) {
 						<div
 							className={
 								'oz-calendar-note-line' +
-								(plugin.settings.fileNameOverflowBehaviour == 'scroll'
-									? ' oz-calendar-overflow-scroll'
-									: plugin.settings.fileNameOverflowBehaviour == 'hide'
+								(plugin.settings.fileNameOverflowBehaviour == 'hide'
 									? ' oz-calendar-overflow-hide'
 									: '')
 							}
