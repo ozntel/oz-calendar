@@ -1,6 +1,6 @@
 {
 	"name": "oz-calendar",
-	"version": "0.2.7",
+	"version": "0.2.8",
 	"description": "View your notes in Calendar using any YAML key with date",
 	"main": "main.js",
 	"scripts": {
