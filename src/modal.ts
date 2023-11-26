@@ -60,32 +60,41 @@ export class CreateNoteModal extends Modal {
 
 		const onClickCreateButton = async () => {
 			let newFileName = fileNameInputEl.value;
-			if (newFileName !== '') {
-				let defFolderSrc = folderInputEl ? folderInputEl.value : this.plugin.settings.defaultFolder;
-				let defFolder = this.app.vault.getAbstractFileByPath(defFolderSrc);
-				if (defFolder && defFolder instanceof TFolder) {
-					// Default Text Preparation for File with YAML and Date
-					let defaultNewFileText = stripIndents`
-                    ---
-                    ${this.plugin.settings.yamlKey}: ${dayjs(this.destinationDate).format(
-						this.plugin.settings.dateFormat
-					)}
-                    ---
-                    `;
-					// Create the MD File and close the modal
-					await createNewMarkdownFile(
-						this.plugin,
-						defFolder,
-						newFileName,
-						this.plugin.settings.dateSource === 'yaml' ? defaultNewFileText : ''
-					);
-					thisModal.close();
-				} else {
-					new Notice('Folder couldnt be found in the Vault');
-				}
-			} else {
+
+			if (newFileName === '') {
 				new Notice('You didnt provide file name');
+				return;
 			}
+
+			if (newFileName.includes('/')) {
+				new Notice('You can not have a slash (/) in file name');
+				return;
+			}
+
+			let defFolderSrc = folderInputEl ? folderInputEl.value : this.plugin.settings.defaultFolder;
+			let defFolder = this.app.vault.getAbstractFileByPath(defFolderSrc);
+
+			if (!defFolder || !(defFolder instanceof TFolder)) {
+				new Notice('Folder couldnt be found in the Vault');
+				return;
+			}
+
+			// Default Text Preparation for File with YAML and Date
+			let defaultNewFileText = stripIndents`
+			---
+			${this.plugin.settings.yamlKey}: ${dayjs(this.destinationDate).format(this.plugin.settings.dateFormat)}
+			---
+			`;
+
+			// Create the MD File and close the modal
+			await createNewMarkdownFile(
+				this.plugin,
+				defFolder as TFolder,
+				newFileName,
+				this.plugin.settings.dateSource === 'yaml' ? defaultNewFileText : ''
+			);
+
+			thisModal.close();
 		};
 
 		createButton.addEventListener('click', onClickCreateButton);
