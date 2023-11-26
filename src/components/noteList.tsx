@@ -132,6 +132,7 @@ export default function NoteListComponent(params: NoteListComponentParams) {
 									: '')
 							}
 							id={notePath}
+							key={notePath}
 							onClick={(e) => openFilePath(e, notePath)}
 							onContextMenu={(e) => triggerFileContextMenu(e, notePath)}>
 							<HiOutlineDocumentText className="oz-calendar-note-line-icon" />

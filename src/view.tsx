@@ -1,8 +1,8 @@
 import { ItemView, WorkspaceLeaf } from 'obsidian';
 import React from 'react';
-import ReactDOM from 'react-dom';
 import OZCalendarPlugin from './main';
 import MyCalendar from './components/calendar';
+import { createRoot, Root } from 'react-dom/client'; 
 
 export const VIEW_TYPE = 'oz-calendar';
 export const VIEW_DISPLAY_TEXT = 'OZ Calendar';
@@ -10,6 +10,7 @@ export const ICON = 'OZCAL_ICON';
 
 export class OZCalendarView extends ItemView {
 	plugin: OZCalendarPlugin;
+	root: Root;
 
 	constructor(leaf: WorkspaceLeaf, plugin: OZCalendarPlugin) {
 		super(leaf);
@@ -33,11 +34,12 @@ export class OZCalendarView extends ItemView {
 	}
 
 	destroy() {
-		ReactDOM.unmountComponentAtNode(this.contentEl);
+		if (this.root) this.root.unmount();
 	}
 
 	async onOpen() {
 		this.destroy();
-		ReactDOM.render(<MyCalendar plugin={this.plugin} />, this.contentEl);
+		this.root = createRoot(this.contentEl)
+		this.root.render(<MyCalendar plugin={this.plugin} />);
 	}
 }

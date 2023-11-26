@@ -78,7 +78,7 @@ export default function MyCalendar(params: { plugin: OZCalendarPlugin }) {
 			return (
 				<div className="dots-wrapper">
 					{[...Array(Math.min(dotsCount, 2))].map((_, index) => (
-						<RxDotFilled viewBox="0 0 15 15" />
+						<RxDotFilled key={index} viewBox="0 0 15 15" />
 					))}
 					{dotsCount > 2 && <span>+{dotsCount - 2}</span>}
 				</div>
