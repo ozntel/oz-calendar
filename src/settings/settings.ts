@@ -19,6 +19,7 @@ export interface OZCalendarPluginSettings {
 	defaultFileNamePrefix: string;
 	fixedCalendar: boolean;
 	showDestinationFolderDuringCreate: boolean;
+	allowSlashhDuringCreate: boolean;
 	openFileBehaviour: OpenFileBehaviourType;
 	sortingOption: SortingOption;
 	newNoteDate: NewNoteDateType;
@@ -36,6 +37,7 @@ export const DEFAULT_SETTINGS: OZCalendarPluginSettings = {
 	defaultFileNamePrefix: 'YYYY-MM-DD',
 	fixedCalendar: true,
 	showDestinationFolderDuringCreate: true,
+	allowSlashhDuringCreate: false,
 	openFileBehaviour: 'current-tab',
 	sortingOption: 'name',
 	newNoteDate: 'current-date',
@@ -287,6 +289,23 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 			.addToggle((toggle) => {
 				toggle.setValue(this.plugin.settings.showDestinationFolderDuringCreate).onChange((newValue) => {
 					this.plugin.settings.showDestinationFolderDuringCreate = newValue;
+					this.plugin.saveSettings();
+				});
+			});
+
+		new Setting(containerEl)
+			.setName('Allow to provide slash during the file creation')
+			.setDesc(
+				`
+                Enable this option if you want to allow file creation modal to allow slash (/) in the filename, which will help creating a folder. 
+                i.e. if this option is enabled and you provide an input like Folder1/File1, this will create Folder1 and place File1 under it. If 
+                the folder exists, the file will be placed under the existing folder. This will respect the default folder location and create the 
+                new folder as a subfolder under the default one.
+                `
+			)
+			.addToggle((toggle) => {
+				toggle.setValue(this.plugin.settings.allowSlashhDuringCreate).onChange((newValue) => {
+					this.plugin.settings.allowSlashhDuringCreate = newValue;
 					this.plugin.saveSettings();
 				});
 			});

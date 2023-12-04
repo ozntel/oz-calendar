@@ -66,7 +66,7 @@ export class CreateNoteModal extends Modal {
 				return;
 			}
 
-			if (newFileName.includes('/')) {
+			if (newFileName.includes('/') && !this.plugin.settings.allowSlashhDuringCreate) {
 				new Notice('You can not have a slash (/) in file name');
 				return;
 			}
