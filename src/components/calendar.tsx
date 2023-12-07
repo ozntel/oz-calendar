@@ -29,10 +29,9 @@ export default function MyCalendar(params: { plugin: OZCalendarPlugin }) {
 
 	const createNote = () => {
 		let currentSelectedDay: Date = selectedDay;
-		let dateNow: Date = null;
+		let dateNow: Date = new Date();
 		setSelectedDay((selectedDay) => {
 			currentSelectedDay = selectedDay;
-			dateNow = new Date();
 			return selectedDay;
 		});
 		// Add now time details to the existing date if current date
