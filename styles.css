@@ -39,6 +39,13 @@ settings:
         type: variable-color
         format: hex
         default: '#'
+    -
+        id: oz-calendar-weeknr-date-color
+        title: Week Number Text Color
+        description: Set the color of week numbers, defaulted to the interactive-accent
+        type: variable-color
+        format: hex
+        default: '#'
 */
 
 .theme-light,
@@ -48,6 +55,7 @@ settings:
 	--oz-calendar-selected-day-background: var(--interactive-accent);
 	--oz-calendar-header-date-color: var(--interactive-accent);
 	--oz-calendar-current-day-color: #74dd58;
+	--oz-calendar-weeknr-date-color: var(--color-accent-2);
 }
 
 .oz-cal-coffee-div,
@@ -268,6 +276,14 @@ settings:
 	width: 100%;
 	overflow-y: auto;
 	vertical-align: top;
+}
+
+.oz-calendar-plugin-view .react-calendar__month-view__weekNumbers {
+	display: block !important;
+	color: var(--oz-calendar-weeknr-date-color);
+	flex-basis: auto !important;
+	background-color: var(--background-modifier-cover);
+	font-size: var(--nav-item-size);
 }
 
 /*  END - Fixed Calendar */

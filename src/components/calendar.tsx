@@ -105,6 +105,7 @@ export default function MyCalendar(params: { plugin: OZCalendarPlugin }) {
 				value={selectedDay}
 				maxDetail="month"
 				minDetail="month"
+				showWeekNumbers={plugin.settings.showWeekNumbers}
 				view="month"
 				tileContent={customTileContent}
 				tileClassName={customTileClass}

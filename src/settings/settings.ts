@@ -25,6 +25,7 @@ export interface OZCalendarPluginSettings {
 	newNoteDate: NewNoteDateType;
 	newNoteCancelButtonReverse: boolean;
 	fileNameOverflowBehaviour: OverflowBehaviour;
+	showWeekNumbers: boolean;
 }
 
 export const DEFAULT_SETTINGS: OZCalendarPluginSettings = {
@@ -43,6 +44,7 @@ export const DEFAULT_SETTINGS: OZCalendarPluginSettings = {
 	newNoteDate: 'current-date',
 	newNoteCancelButtonReverse: false,
 	fileNameOverflowBehaviour: 'hide',
+	showWeekNumbers: false,
 };
 
 export class OZCalendarPluginSettingsTab extends PluginSettingTab {
@@ -112,6 +114,17 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 						this.plugin.saveSettings();
 						this.plugin.calendarForceUpdate();
 					});
+			});
+
+		new Setting(containerEl)
+			.setName('Show Week Numbers')
+			.setDesc('Enable if you want to have week numbers within the calendar view')
+			.addToggle((toggle) => {
+				toggle.setValue(this.plugin.settings.showWeekNumbers).onChange((newValue) => {
+					this.plugin.settings.showWeekNumbers = newValue;
+					this.plugin.saveSettings();
+					this.plugin.calendarForceUpdate();
+				});
 			});
 
 		new Setting(containerEl)
