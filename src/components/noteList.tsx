@@ -8,6 +8,7 @@ import OZCalendarPlugin from 'main';
 import { isMouseEvent, openFile } from '../util/utils';
 import { Menu, TFile } from 'obsidian';
 import { VIEW_TYPE } from 'view';
+import { OZNote } from 'types';
 
 interface NoteListComponentParams {
 	selectedDay: Date;
@@ -57,13 +58,18 @@ export default function NoteListComponent(params: NoteListComponentParams) {
 		}
 	};
 
-	const selectedDayNotes = useMemo(() => {
+	const selectedDayNotes: OZNote[] = useMemo(() => {
 		const selectedDayIso = dayjs(selectedDay).format('YYYY-MM-DD');
-		let sortedList =
-			selectedDayIso in plugin.OZCALENDARDAYS_STATE ? plugin.OZCALENDARDAYS_STATE[selectedDayIso] : [];
+		let sortedList: OZNote[] = [];
+		if (selectedDayIso in plugin.OZCALENDARDAYS_STATE) {
+			sortedList = plugin.OZCALENDARDAYS_STATE[selectedDayIso].filter(
+				(ozItem) => ozItem.type === 'note'
+			) as OZNote[];
+		}
 		sortedList = sortedList.sort((a, b) => {
-			if (plugin.settings.sortingOption === 'name-rev') [a, b] = [b, a];
-			return extractFileName(a).localeCompare(extractFileName(b), 'en', { numeric: true });
+			if (plugin.settings.sortingOption === 'name-rev')
+				[a.displayName, b.displayName] = [b.displayName, a.displayName];
+			return a.displayName.localeCompare(b.displayName, 'en', { numeric: true });
 		});
 		return sortedList;
 	}, [selectedDay, forceValue]);
@@ -122,7 +128,7 @@ export default function NoteListComponent(params: NoteListComponentParams) {
 						No note found
 					</div>
 				)}
-				{selectedDayNotes.map((notePath) => {
+				{selectedDayNotes.map((ozNote) => {
 					return (
 						<div
 							className={
@@ -131,12 +137,12 @@ export default function NoteListComponent(params: NoteListComponentParams) {
 									? ' oz-calendar-overflow-hide'
 									: '')
 							}
-							id={notePath}
-							key={notePath}
-							onClick={(e) => openFilePath(e, notePath)}
-							onContextMenu={(e) => triggerFileContextMenu(e, notePath)}>
+							id={ozNote.path}
+							key={ozNote.path}
+							onClick={(e) => openFilePath(e, ozNote.path)}
+							onContextMenu={(e) => triggerFileContextMenu(e, ozNote.path)}>
 							<HiOutlineDocumentText className="oz-calendar-note-line-icon" />
-							<span>{extractFileName(notePath)}</span>
+							<span>{ozNote.displayName}</span>
 						</div>
 					);
 				})}

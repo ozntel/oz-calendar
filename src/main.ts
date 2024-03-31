@@ -2,7 +2,7 @@ import { CachedMetadata, Menu, Plugin, TAbstractFile, TFile, addIcon } from 'obs
 import { OZCalendarView, VIEW_TYPE } from 'view';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import { DayChangeCommandAction, OZCalendarDaysMap } from 'types';
+import { DayChangeCommandAction, OZCalendarDaysMap, fileToOZItem } from 'types';
 import { OZCAL_ICON } from './util/icons';
 import { OZCalendarPluginSettings, DEFAULT_SETTINGS, OZCalendarPluginSettingsTab } from './settings/settings';
 import { CreateNoteModal } from 'modal';
@@ -140,13 +140,13 @@ export default class OZCalendarPlugin extends Plugin {
 	 * @param date
 	 * @param filePath
 	 */
-	addFilePathToState = (date: string, filePath: string) => {
+	addFilePathToState = (date: string, file: TFile) => {
 		let newStateMap = this.OZCALENDARDAYS_STATE;
 		// if exists, add the new file path
 		if (date in newStateMap) {
-			newStateMap[date] = [...newStateMap[date], filePath];
+			newStateMap[date] = [...newStateMap[date], fileToOZItem({ note: file })];
 		} else {
-			newStateMap[date] = [filePath];
+			newStateMap[date] = [fileToOZItem({ note: file })];
 		}
 		this.OZCALENDARDAYS_STATE = newStateMap;
 	};
@@ -160,8 +160,10 @@ export default class OZCalendarPlugin extends Plugin {
 		let changeFlag = false;
 		let newStateMap = this.OZCALENDARDAYS_STATE;
 		for (let k of Object.keys(newStateMap)) {
-			if (newStateMap[k].contains(filePath)) {
-				newStateMap[k] = newStateMap[k].filter((p) => p !== filePath);
+			if (newStateMap[k].some((ozItem) => ozItem.type === 'note' && ozItem.path === filePath)) {
+				newStateMap[k] = newStateMap[k].filter((ozItem) => {
+					return !(ozItem.type === 'note' && ozItem.path === filePath);
+				});
 				changeFlag = true;
 			}
 		}
@@ -183,7 +185,7 @@ export default class OZCalendarPlugin extends Plugin {
 				if (k === this.settings.yamlKey) {
 					let fmValue = String(fm[k]);
 					let parsedDayISOString = dayjs(fmValue, this.settings.dateFormat).format('YYYY-MM-DD');
-					this.addFilePathToState(parsedDayISOString, file.path);
+					this.addFilePathToState(parsedDayISOString, file);
 					changeFlag = true;
 				}
 			}
@@ -215,11 +217,11 @@ export default class OZCalendarPlugin extends Plugin {
 						let parsedDayISOString = dayjs(fmValue, this.settings.dateFormat).format('YYYY-MM-DD');
 						// If date doesn't exist, create a new one
 						if (!(parsedDayISOString in this.OZCALENDARDAYS_STATE)) {
-							this.addFilePathToState(parsedDayISOString, file.path);
+							this.addFilePathToState(parsedDayISOString, file);
 						} else {
 							// if date exists and note is not in the date list
 							if (!(file.path in this.OZCALENDARDAYS_STATE[parsedDayISOString])) {
-								this.addFilePathToState(parsedDayISOString, file.path);
+								this.addFilePathToState(parsedDayISOString, file);
 							}
 						}
 					}
@@ -235,14 +237,16 @@ export default class OZCalendarPlugin extends Plugin {
 		let changeFlag = false;
 		if (file instanceof TFile && file.extension === 'md') {
 			for (let k of Object.keys(this.OZCALENDARDAYS_STATE)) {
-				for (let filePath of this.OZCALENDARDAYS_STATE[k]) {
-					if (filePath === oldPath) {
-						let oldIndex = this.OZCALENDARDAYS_STATE[k].indexOf(filePath);
+				for (let ozItem of this.OZCALENDARDAYS_STATE[k]) {
+					if (ozItem.type === 'note' && ozItem.path === oldPath) {
 						if (this.settings.dateSource === 'yaml') {
-							this.OZCALENDARDAYS_STATE[k][oldIndex] = file.path;
+							ozItem.path = file.path;
+							ozItem.displayName = file.basename;
 							changeFlag = true;
 						} else if (this.settings.dateSource === 'filename') {
-							this.OZCALENDARDAYS_STATE[k].splice(oldIndex, 1);
+							this.OZCALENDARDAYS_STATE[k] = this.OZCALENDARDAYS_STATE[k].filter((ozItem) => {
+								return !(ozItem.type === 'note' && ozItem.path === oldPath);
+							});
 							changeFlag = true;
 						}
 					}
@@ -256,10 +260,10 @@ export default class OZCalendarPlugin extends Plugin {
 			if (parsedDayISOString in this.OZCALENDARDAYS_STATE) {
 				this.OZCALENDARDAYS_STATE[parsedDayISOString] = [
 					...this.OZCALENDARDAYS_STATE[parsedDayISOString],
-					file.path,
+					fileToOZItem({ note: file }),
 				];
 			} else {
-				this.OZCALENDARDAYS_STATE[parsedDayISOString] = [file.path];
+				this.OZCALENDARDAYS_STATE[parsedDayISOString] = [fileToOZItem({ note: file })];
 			}
 			changeFlag = true;
 		}
@@ -280,10 +284,10 @@ export default class OZCalendarPlugin extends Plugin {
 				if (parsedDayISOString in this.OZCALENDARDAYS_STATE) {
 					this.OZCALENDARDAYS_STATE[parsedDayISOString] = [
 						...this.OZCALENDARDAYS_STATE[parsedDayISOString],
-						file.path,
+						fileToOZItem({ note: file }),
 					];
 				} else {
-					this.OZCALENDARDAYS_STATE[parsedDayISOString] = [file.path];
+					this.OZCALENDARDAYS_STATE[parsedDayISOString] = [fileToOZItem({ note: file })];
 				}
 			}
 			this.calendarForceUpdate();
@@ -335,10 +339,10 @@ export default class OZCalendarPlugin extends Plugin {
 							if (parsedDayISOString in OZCalendarDays) {
 								OZCalendarDays[parsedDayISOString] = [
 									...OZCalendarDays[parsedDayISOString],
-									mdFile.path,
+									fileToOZItem({ note: mdFile }),
 								];
 							} else {
-								OZCalendarDays[parsedDayISOString] = [mdFile.path];
+								OZCalendarDays[parsedDayISOString] = [fileToOZItem({ note: mdFile })];
 							}
 						}
 					}
@@ -351,10 +355,10 @@ export default class OZCalendarPlugin extends Plugin {
 						if (parsedDayISOString in OZCalendarDays) {
 							OZCalendarDays[parsedDayISOString] = [
 								...OZCalendarDays[parsedDayISOString],
-								mdFile.path,
+								fileToOZItem({ note: mdFile }),
 							];
 						} else {
-							OZCalendarDays[parsedDayISOString] = [mdFile.path];
+							OZCalendarDays[parsedDayISOString] = [fileToOZItem({ note: mdFile })];
 						}
 					}
 				}
