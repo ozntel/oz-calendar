@@ -3,6 +3,8 @@
 import { TAbstractFile, TFolder } from 'obsidian';
 import { TextInputSuggest } from './suggest';
 
+declare const app: any;
+
 export class FolderSuggest extends TextInputSuggest<TFolder> {
 	getSuggestions(inputStr: string): TFolder[] {
 		const abstractFiles = app.vault.getAllLoadedFiles();

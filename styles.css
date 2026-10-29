@@ -169,7 +169,11 @@ settings:
 	justify-content: space-between;
 	display: block;
 	padding: 5px;
-	flex: 1;
+	/* Basis = content height so the note list is the only part that gives up
+	   space: when the section has to shrink, the list shrinks (and scrolls)
+	   instead of the calendar or the header being squeezed. */
+	flex: 1 1 auto;
+	min-height: 0;
 }
 
 .oz-calendar-nav-action-plus {
@@ -262,14 +266,17 @@ settings:
 
 .oz-calendar-plugin-view.fixed .react-calendar {
 	height: 295px;
+	flex-shrink: 0;
 }
 
 .oz-calendar-plugin-view.fixed #oz-calendar-divider {
 	height: 4px;
+	flex-shrink: 0;
 }
 
 .oz-calendar-plugin-view.fixed .oz-calendar-notelist-header-container {
 	height: 30px;
+	flex-shrink: 0;
 }
 
 .oz-calendar-plugin-view.fixed .oz-calendar-notelist-container {
@@ -318,4 +325,60 @@ settings:
 	text-overflow: ellipsis;
 	overflow: hidden;
 	white-space: nowrap;
+}
+
+.oz-calendar-note-line[draggable="true"] {
+	cursor: grab;
+}
+
+.oz-calendar-note-line-dragging {
+	opacity: 0.5;
+}
+
+.oz-calendar-top-section {
+	display: flex;
+	flex-direction: column;
+	/* Basis = content height (calendar + all notes of the selected day), so the
+	   whole day fits without scrolling whenever there is room. It also absorbs
+	   the leftover space, which keeps the open tabs section stuck to the bottom. */
+	flex: 1 1 auto;
+	min-height: 0;
+}
+
+.oz-calendar-open-tabs-container {
+	display: flex;
+	flex-direction: column;
+	/* Sized by its own content only: never grows into the leftover space. The
+	   very high shrink factor makes it give up space first, down to
+	   min-height, before the note list above starts scrolling. */
+	flex: 0 1000 auto;
+	min-height: 64px;
+	border-top: 1px solid var(--background-modifier-border);
+}
+
+.oz-calendar-open-tabs-header {
+	padding: 6px 8px;
+	font-weight: 600;
+	font-size: var(--nav-item-size);
+	color: var(--oz-calendar-header-date-color);
+	flex-shrink: 0;
+}
+
+.oz-calendar-open-tabs-list {
+	flex: 1 1 auto;
+	overflow-y: auto;
+	padding: 0 5px 5px 5px;
+	min-height: 0;
+}
+
+.oz-calendar-plugin-view.fixed .oz-calendar-top-section {
+	overflow: hidden;
+}
+
+.oz-calendar-plugin-view.fixed .oz-calendar-open-tabs-list {
+	overflow-y: auto;
+}
+
+.oz-calendar-menu-item-delete .menu-item-title {
+	color: var(--text-error);
 }

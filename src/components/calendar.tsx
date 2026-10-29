@@ -3,6 +3,7 @@ import Calendar, { CalendarTileProperties } from 'react-calendar';
 import { RxDotFilled } from 'react-icons/rx';
 import OZCalendarPlugin from '../main';
 import NoteListComponent from './noteList';
+import OpenTabsComponent from './openTabs';
 import dayjs from 'dayjs';
 import useForceUpdate from 'hooks/forceUpdate';
 import { DayChangeCommandAction } from 'types';
@@ -100,32 +101,32 @@ export default function MyCalendar(params: { plugin: OZCalendarPlugin }) {
 
 	return (
 		<div className={'oz-calendar-plugin-view ' + fixedCalendarClass}>
-			<Calendar
-				onChange={setSelectedDay}
-				value={selectedDay}
-				maxDetail="month"
-				minDetail="month"
-				showWeekNumbers={plugin.settings.showWeekNumbers}
-				view="month"
-				tileContent={customTileContent}
-				tileClassName={customTileClass}
-				calendarType={plugin.settings.calendarType}
-				showFixedNumberOfWeeks={plugin.settings.fixedCalendar}
-				activeStartDate={activeStartDate}
-				onActiveStartDateChange={(props) => {
-					if (props.action === 'next') {
-						setActiveStartDate(dayjs(activeStartDate).add(1, 'month').toDate());
-					} else if (props.action === 'next2') {
-						setActiveStartDate(dayjs(activeStartDate).add(12, 'month').toDate());
-					} else if (props.action === 'prev') {
-						setActiveStartDate(dayjs(activeStartDate).add(-1, 'month').toDate());
-					} else if (props.action === 'prev2') {
-						setActiveStartDate(dayjs(activeStartDate).add(-12, 'month').toDate());
-					}
-				}}
-				formatMonthYear={(locale, date) => dayjs(date).format('MMM YYYY')}
-			/>
-			<>
+			<div className="oz-calendar-top-section">
+				<Calendar
+					onChange={setSelectedDay}
+					value={selectedDay}
+					maxDetail="month"
+					minDetail="month"
+					showWeekNumbers={plugin.settings.showWeekNumbers}
+					view="month"
+					tileContent={customTileContent}
+					tileClassName={customTileClass}
+					calendarType={plugin.settings.calendarType}
+					showFixedNumberOfWeeks={plugin.settings.fixedCalendar}
+					activeStartDate={activeStartDate}
+					onActiveStartDateChange={(props) => {
+						if (props.action === 'next') {
+							setActiveStartDate(dayjs(activeStartDate).add(1, 'month').toDate());
+						} else if (props.action === 'next2') {
+							setActiveStartDate(dayjs(activeStartDate).add(12, 'month').toDate());
+						} else if (props.action === 'prev') {
+							setActiveStartDate(dayjs(activeStartDate).add(-1, 'month').toDate());
+						} else if (props.action === 'prev2') {
+							setActiveStartDate(dayjs(activeStartDate).add(-12, 'month').toDate());
+						}
+					}}
+					formatMonthYear={(locale, date) => dayjs(date).format('MMM YYYY')}
+				/>
 				<div id="oz-calendar-divider"></div>
 				<NoteListComponent
 					selectedDay={selectedDay}
@@ -135,7 +136,8 @@ export default function MyCalendar(params: { plugin: OZCalendarPlugin }) {
 					forceValue={forceValue}
 					createNote={createNote}
 				/>
-			</>
+			</div>
+			<OpenTabsComponent plugin={plugin} />
 		</div>
 	);
 }

@@ -1,0 +1,384 @@
+/* @settings
+
+name: OZ Calendar Plugin
+id: oz-calendar-plugin
+settings:
+
+    -
+        id: oz-calendar-weekend-color
+        title: Weekend Text Color
+        description: Set the color of weekend in the calendar
+        type: variable-color
+        format: hex
+        default: '#f76a6a'
+    -
+        id: oz-calendar-selected-daycolor
+        title: Selected Day Text Color
+        description: Set the color of selected day in the month view, defaulted to text-normal
+        type: variable-color
+        format: hex
+        default: '#'
+    -
+        id: oz-calendar-current-day-color
+        title: Current Day (Today) Text Color
+        description: Set the color of the current day in the month view
+        type: variable-color
+        format: hex
+        default: '#'
+    -
+        id: oz-calendar-selected-day-background
+        title: Selected Day Background Color
+        description: Set the color of selected day background in the month view, defaulted to the interactive-accent
+        type: variable-color
+        format: hex
+        default: '#'
+    -
+        id: oz-calendar-header-date-color
+        title: Header Dates Text Color
+        description: Set the color of headers dates like (month/year, and date above the list), defaulted to the interactive-accent
+        type: variable-color
+        format: hex
+        default: '#'
+    -
+        id: oz-calendar-weeknr-date-color
+        title: Week Number Text Color
+        description: Set the color of week numbers, defaulted to the interactive-accent
+        type: variable-color
+        format: hex
+        default: '#'
+*/
+
+.theme-light,
+.theme-dark {
+	--oz-calendar-weekend-color: #f76a6a;
+	--oz-calendar-selected-daycolor: var(--text-normal);
+	--oz-calendar-selected-day-background: var(--interactive-accent);
+	--oz-calendar-header-date-color: var(--interactive-accent);
+	--oz-calendar-current-day-color: #74dd58;
+	--oz-calendar-weeknr-date-color: var(--color-accent-2);
+}
+
+.oz-cal-coffee-div,
+.oz-cal-tip-div {
+	text-align: center;
+	margin-top: 10px;
+}
+
+.oz-cal-tip-div img {
+	border-radius: 10px;
+}
+
+.OZCAL_ICON {
+	fill: var(--icon-color) !important;
+}
+
+.oz-calendar-plugin-view {
+	min-height: 100%;
+	display: flex;
+	flex-direction: column;
+}
+
+.oz-calendar-plugin-view .react-calendar__tile.react-calendar__month-view__days__day:hover {
+	background: var(--background-secondary-alt);
+}
+
+.oz-calendar-plugin-view .react-calendar__tile--active {
+	background-color: var(--oz-calendar-selected-day-background) !important;
+}
+
+.oz-calendar-plugin-view .react-calendar button:enabled:hover {
+	cursor: pointer;
+}
+
+.oz-calendar-plugin-view .react-calendar__navigation {
+	display: flex;
+}
+
+.oz-calendar-plugin-view .react-calendar__month-view__weekdays {
+	text-align: center;
+	text-transform: uppercase;
+	font-weight: bold;
+	font-size: 0.75em;
+}
+
+.oz-calendar-plugin-view .react-calendar__month-view__weekdays__weekday {
+	padding: 0.5em;
+}
+
+.oz-calendar-plugin-view .react-calendar__month-view__weekdays__weekday abbr {
+	text-decoration: none;
+}
+
+.oz-calendar-plugin-view .react-calendar__month-view__days__day--weekend {
+	color: var(--oz-calendar-weekend-color);
+}
+
+.oz-calendar-plugin-view .react-calendar__month-view__days__day--neighboringMonth {
+	color: var(--text-muted);
+	opacity: 0.5;
+}
+
+.oz-calendar-plugin-view .react-calendar__tile {
+	max-width: 100%;
+	padding: 10px 6.6667px;
+	background: none;
+	text-align: center;
+	line-height: 16px;
+	height: 40px;
+	display: block;
+}
+
+.oz-calendar-plugin-view button.react-calendar__tile.react-calendar__month-view__days__day,
+.oz-calendar-plugin-view button.react-calendar__navigation__arrow,
+.oz-calendar-plugin-view button.react-calendar__navigation__label {
+	background-color: transparent;
+	box-shadow: none !important;
+}
+
+.oz-calendar-plugin-view button.react-calendar__navigation__label {
+	color: var(--oz-calendar-header-date-color);
+	font-size: 1.3em;
+}
+
+.oz-calendar-plugin-view .dots-wrapper {
+	font-size: 8px;
+	display: flex;
+	justify-content: center;
+	vertical-align: middle !important;
+	min-height: 3.5px !important;
+}
+
+.oz-calendar-plugin-view .dots-wrapper svg {
+	margin-top: 3.8px;
+}
+
+.oz-calendar-plugin-view .react-calendar__tile--active {
+	color: var(--oz-calendar-selected-daycolor);
+	font-weight: bold;
+	font-size: 1em;
+}
+
+#oz-calendar-divider {
+	height: 3.8px;
+	opacity: 0.3;
+	margin: 10px 0px 10px 0px;
+	border-bottom: 3px solid var(--text-muted);
+}
+
+.oz-calendar-notelist-container {
+	justify-content: space-between;
+	display: block;
+	padding: 5px;
+	/* Basis = content height so the note list is the only part that gives up
+	   space: when the section has to shrink, the list shrinks (and scrolls)
+	   instead of the calendar or the header being squeezed. */
+	flex: 1 1 auto;
+	min-height: 0;
+}
+
+.oz-calendar-nav-action-plus {
+	width: 10%;
+	display: inline-block;
+	color: var(--text-muted);
+	vertical-align: top;
+	padding-top: 2px;
+}
+
+.oz-calendar-nav-action-plus svg:hover {
+	cursor: pointer;
+	opacity: 0.6;
+}
+
+.oz-calendar-nav-action-left {
+	display: inline-block;
+	width: 15%;
+	color: var(--text-muted);
+	text-align: right;
+}
+
+.oz-calendar-nav-action-middle {
+	display: inline-block;
+	width: 50%;
+	text-align: center;
+	vertical-align: top;
+	font-size: 1.1em;
+	color: var(--oz-calendar-header-date-color);
+	cursor: pointer;
+}
+
+.oz-calendar-nav-action-right {
+	display: inline-block;
+	width: 15%;
+	text-align: left;
+	color: var(--text-muted);
+}
+
+.oz-calendar-nav-action-left svg:hover,
+.oz-calendar-nav-action-right svg:hover {
+	cursor: pointer;
+	opacity: 0.6;
+}
+
+.oz-calendar-note-line {
+	padding-top: 3px;
+	padding-bottom: 3px;
+	font-size: var(--nav-item-size);
+}
+
+.oz-calendar-note-line:hover {
+	cursor: pointer;
+	background-color: var(--background-secondary-alt);
+	color: var(--text-normal);
+}
+
+.oz-calendar-note-line-icon {
+	padding-right: 3px;
+	padding-bottom: 2px;
+	vertical-align: middle;
+}
+
+.oz-calendar-note-no-note {
+	font-size: var(--nav-item-size);
+	align-items: center;
+	text-align: center;
+	margin-top: 10px;
+}
+
+.oz-calendar-no-note-icon {
+	vertical-align: middle;
+	padding-bottom: 2px;
+	margin-right: 3px;
+}
+
+.oz-calendar-plugin-today abbr {
+	color: var(--oz-calendar-current-day-color);
+	font-weight: bold;
+}
+
+/* START - Fixed Calendar Except Note List - Scroll */
+
+.oz-calendar-plugin-view.fixed {
+	height: 100%;
+	max-height: 100%;
+	display: flex;
+	flex-direction: column;
+}
+
+.oz-calendar-plugin-view.fixed .react-calendar {
+	height: 295px;
+	flex-shrink: 0;
+}
+
+.oz-calendar-plugin-view.fixed #oz-calendar-divider {
+	height: 4px;
+	flex-shrink: 0;
+}
+
+.oz-calendar-plugin-view.fixed .oz-calendar-notelist-header-container {
+	height: 30px;
+	flex-shrink: 0;
+}
+
+.oz-calendar-plugin-view.fixed .oz-calendar-notelist-container {
+	width: 100%;
+	overflow-y: auto;
+	vertical-align: top;
+}
+
+.oz-calendar-plugin-view .react-calendar__month-view__weekNumbers {
+	display: block !important;
+	color: var(--oz-calendar-weeknr-date-color);
+	flex-basis: auto !important;
+	background-color: var(--background-modifier-cover);
+	font-size: var(--nav-item-size);
+}
+
+/*  END - Fixed Calendar */
+
+.oz-calendar-modal-inputel {
+	width: 100%;
+	height: 2.5em;
+}
+
+.oz-calendar-modal-addspacediv {
+	height: 20px;
+}
+
+.oz-calendar-modal-float-right {
+	float: right;
+}
+
+.oz-calendar-custom-hidden {
+	display: none !important;
+}
+
+.oz-calendar-note-line {
+	color: var(--text-muted);
+}
+
+.oz-calendar-overflow-scroll {
+	overflow: scroll;
+	white-space: nowrap;
+}
+
+.oz-calendar-overflow-hide {
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: nowrap;
+}
+
+.oz-calendar-note-line[draggable="true"] {
+	cursor: grab;
+}
+
+.oz-calendar-note-line-dragging {
+	opacity: 0.5;
+}
+
+.oz-calendar-top-section {
+	display: flex;
+	flex-direction: column;
+	/* Basis = content height (calendar + all notes of the selected day), so the
+	   whole day fits without scrolling whenever there is room. It also absorbs
+	   the leftover space, which keeps the open tabs section stuck to the bottom. */
+	flex: 1 1 auto;
+	min-height: 0;
+}
+
+.oz-calendar-open-tabs-container {
+	display: flex;
+	flex-direction: column;
+	/* Sized by its own content only: never grows into the leftover space. The
+	   very high shrink factor makes it give up space first, down to
+	   min-height, before the note list above starts scrolling. */
+	flex: 0 1000 auto;
+	min-height: 64px;
+	border-top: 1px solid var(--background-modifier-border);
+}
+
+.oz-calendar-open-tabs-header {
+	padding: 6px 8px;
+	font-weight: 600;
+	font-size: var(--nav-item-size);
+	color: var(--oz-calendar-header-date-color);
+	flex-shrink: 0;
+}
+
+.oz-calendar-open-tabs-list {
+	flex: 1 1 auto;
+	overflow-y: auto;
+	padding: 0 5px 5px 5px;
+	min-height: 0;
+}
+
+.oz-calendar-plugin-view.fixed .oz-calendar-top-section {
+	overflow: hidden;
+}
+
+.oz-calendar-plugin-view.fixed .oz-calendar-open-tabs-list {
+	overflow-y: auto;
+}
+
+.oz-calendar-menu-item-delete .menu-item-title {
+	color: var(--text-error);
+}

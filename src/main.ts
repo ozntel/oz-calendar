@@ -323,7 +323,7 @@ export default class OZCalendarPlugin extends Plugin {
 		for (let mdFile of mdFiles) {
 			if (this.settings.dateSource === 'yaml') {
 				// Get the file Cache
-				let fileCache = app.metadataCache.getFileCache(mdFile);
+				let fileCache = this.app.metadataCache.getFileCache(mdFile);
 				// Check if there is Frontmatter
 				if (fileCache && fileCache.frontmatter) {
 					let fm = fileCache.frontmatter;
