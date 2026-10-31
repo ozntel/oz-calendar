@@ -124,8 +124,9 @@ settings:
 }
 
 /* Higher specificity than Obsidian's ".is-tablet button:not(.clickable-icon)" padding,
-   which otherwise makes the tiles wider than 1/7 and wraps the week into 6 columns */
-.oz-calendar-plugin-view .react-calendar button.react-calendar__tile {
+   which otherwise makes the tiles wider than 1/7 and wraps the week into 6 columns.
+   Not limited to buttons, since week numbers are rendered as div tiles */
+.oz-calendar-plugin-view .react-calendar .react-calendar__tile {
 	max-width: 100%;
 	padding: 10px 6.6667px;
 	background: none;
