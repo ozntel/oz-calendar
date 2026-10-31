@@ -8,14 +8,21 @@ If you like the see your notes on a Calendar and easily find them using a certai
 
 ## Configure
 
-> IMPORTANT: Please make sure that you check the date formatting of the library, which is used by this plugin following [Day.js Date Format Link](https://day.js.org/docs/en/display/format).
+> IMPORTANT: Please make sure that you check the date format tokens supported by the plugin following [Moment.js Date Format Link](https://momentjs.com/docs/#/displaying/format/) (e.g. `YYYY-MM-DD`, `D MMMM YYYY`, `HH:mm`).
+
+### Dates in Your Language
+
+By default, month and weekday names (e.g. `MMMM`, `ddd`) follow the language set in Obsidian (**Settings → General → Language**). This applies to the calendar view, new note titles, the YAML date and the dates read from your notes. If you prefer English names regardless of the Obsidian language, disable **Use Obsidian Language for Dates** in the plugin settings.
+
+> If your date format contains month or weekday names and your existing notes use English names, keep **Use Obsidian Language for Dates** disabled, otherwise those notes won't be recognised.
 
 ### 01 YAML Option as Date Source
 
 1. Go to the plugin settings
 2. Define the **YAML** key you want to use as a date field. The default key is **created**
-3. Define the **Date Format** you are using within **YAML**. The default date format is **YYYY-MM-DD hh:mm:ss**
-4. After these changes, use **Reload Plugin** option to activate the changes in the vault.
+3. Define the **Date Format** you are using within **YAML**. The default date format is **YYYY-MM-DD HH:mm:ss**
+
+Changes are applied right away, there is no need to reload the plugin.
 
 For the ones that don't know how to add a YAML key, see the following:
 
@@ -34,7 +41,8 @@ The default date source is the YAML Key ("created") as mentioned above. If you w
 1. Go to the plugin settings
 2. Change Date Source from **YAML** to **File Name** since the plugin has **YAML** key as a default date source
 3. Make sure that you adjust the default date format (**Important**: The default date format has special characters that is not supported for file name like colon that needs to be adjusted for File Name option)
-4. After these changes, use **Reload Plugin** option to activate the changes in the vault.
+
+Changes are applied right away, there is no need to reload the plugin.
 
 > Both YAML and File Name options can include additional characters in the file name. As long as the custom date format defined in the plugin settings is at the beginning of the YAML key or File Name, the plugin will be smart enough to parse only the beginning of the key/filename. For instance, if you have a file name '**2023-03-10 This is the file**' and your date format defined in the plugin settings is **YYYY-MM-DD**, it will be parsed just fine in the calendar.
 
@@ -48,6 +56,35 @@ You can define this in the plugin settings:
 -   And the **File Prefix Date Format** in case you prefer your file names to start with a certain date format
 -   You can right-click any date in the calendar view to create a note for a certain date
 -   The plus icon is defaulted to create a note for today
+-   An optional **New Note Template** (see [Templates](#templates))
+
+## Templates
+
+You can set a template file for the new notes (**New Note Template**) and for the weekly notes (**Weekly Note Template**) under the **Templates** section of the plugin settings. Which syntax is processed depends on whether the **Templater** plugin is enabled. The settings page shows which one applies to your vault and warns you if a template can't be fully processed.
+
+| | `{{date}}`, `{{title}}`, `{{time}}`, `{{date:FORMAT}}` | `<% ... %>` Templater commands |
+| --- | --- | --- |
+| Templater enabled | Filled in by OZ Calendar (first) | Run by Templater |
+| Templater not enabled | Filled in by OZ Calendar | Left as plain text |
+
+The `{{...}}` syntax is the same as the core **Templates** plugin, but it is filled in by OZ Calendar, so it works without the core Templates plugin and doesn't depend on its settings.
+
+
+-   Core Templates variables are always replaced: `{{title}}`, `{{date}}`, `{{time}}`, `{{date:FORMAT}}` and `{{time:FORMAT}}` (e.g. `{{date:dddd, D MMMM YYYY}}`). The date is the **date of the note** (the day you create the note for, or the first day of the week for weekly notes), not today.
+-   If the **Templater** plugin is enabled, Templater commands (`<% ... %>`) are processed as well. Note that `tp.date.now()` is the current date. To use the date of the note, use `{{date}}` (it is replaced before Templater runs), e.g. `<% tp.date.now("YYYY-MM-DD", 7, "{{date}}", "YYYY-MM-DD") %>` for a week after the note date.
+-   If the date source is YAML, the YAML key with the date is added to the note's frontmatter, unless the template already has it.
+
+## Weekly Notes
+
+Enable **Weekly Notes** and **Show Week Numbers** in the plugin settings to use the week numbers of the calendar:
+
+-   Click on a week number to open the weekly note of that week. If it doesn't exist yet, it will be created. Use **Cmd/Ctrl + Click** to open it in a new tab.
+-   Week numbers with an existing weekly note are shown bold and underlined.
+-   **Weekly Note Format**: leave it empty to use the format matching the Calendar Type (ISO 8601: `GGGG-[W]WW` → `2026-W44`, US: `gggg-[W]ww`).
+-   **Weekly Notes Folder**: leave it empty to use the default folder of the new notes. If you set a separate folder, the weekly notes are not shown as dots on the days (you can change this with **Hide Weekly Notes from Days**).
+-   **Weekly Note Template**: optional template file, see [Templates](#templates). `{{date}}` is the first day of the week.
+
+Commands: **Open This Week's Note**, **Open Previous Week's Note** and **Open Next Week's Note**.
 
 ## Plugin Commands
 

@@ -1,25 +1,27 @@
 import OZCalendarPlugin from 'main';
 import { Modal, TFolder, Notice } from 'obsidian';
-import { createNewMarkdownFile } from './util/utils';
-import { stripIndents } from 'common-tags';
-import dayjs from 'dayjs';
+import { openFile } from './util/utils';
+import { createNoteFromTemplate } from './util/templates';
 import { FolderSuggest } from 'settings/suggestor';
+import { getStartOfWeek, getWeeklyNoteName, getWeeklyNotesFolder } from './util/weeklyNotes';
 
 export class CreateNoteModal extends Modal {
 	plugin: OZCalendarPlugin;
 	destinationDate: Date;
+	weekly: boolean;
 
-	constructor(plugin: OZCalendarPlugin, destinationDate: Date) {
+	constructor(plugin: OZCalendarPlugin, destinationDate: Date, options?: { weekly?: boolean }) {
 		super(plugin.app);
 		this.plugin = plugin;
 		this.destinationDate = destinationDate;
+		this.weekly = options?.weekly ?? false;
 	}
 
 	onOpen(): void {
 		let { contentEl } = this;
 		let thisModal = this;
 
-		const headerEl = contentEl.createEl('div', { text: 'Create Note' });
+		const headerEl = contentEl.createEl('div', { text: this.weekly ? 'Create Weekly Note' : 'Create Note' });
 		headerEl.addClass('modal-title');
 
 		// Input El
@@ -27,19 +29,22 @@ export class CreateNoteModal extends Modal {
 		const fileNameInputEl = contentEl.createEl('input', { cls: 'oz-calendar-modal-inputel' });
 
 		let defFileNamePref = this.plugin.settings.defaultFileNamePrefix;
-		if (defFileNamePref !== '') {
-			fileNameInputEl.value = dayjs(this.destinationDate).format(defFileNamePref) + ' ';
+		if (this.weekly) {
+			fileNameInputEl.value = getWeeklyNoteName(this.plugin, this.destinationDate);
+		} else if (defFileNamePref !== '') {
+			fileNameInputEl.value = this.plugin.formatDate(this.destinationDate, defFileNamePref) + ' ';
 		}
 
 		fileNameInputEl.focus();
 
 		// Folder Select
 		let folderInputEl: HTMLInputElement = null;
+		const defaultFolder = this.weekly ? getWeeklyNotesFolder(this.plugin) : this.plugin.settings.defaultFolder;
 		if (this.plugin.settings.showDestinationFolderDuringCreate) {
 			contentEl.createEl('p', { text: 'Destination Folder:' });
 			folderInputEl = contentEl.createEl('input', { cls: 'oz-calendar-modal-inputel' });
-			new FolderSuggest(folderInputEl);
-			folderInputEl.value = this.plugin.settings.defaultFolder;
+			new FolderSuggest(this.app, folderInputEl);
+			folderInputEl.value = defaultFolder;
 		}
 
 		// Additional Space
@@ -71,7 +76,7 @@ export class CreateNoteModal extends Modal {
 				return;
 			}
 
-			let defFolderSrc = folderInputEl ? folderInputEl.value : this.plugin.settings.defaultFolder;
+			let defFolderSrc = folderInputEl ? folderInputEl.value : defaultFolder;
 			let defFolder = this.app.vault.getAbstractFileByPath(defFolderSrc);
 
 			if (!defFolder || !(defFolder instanceof TFolder)) {
@@ -79,20 +84,23 @@ export class CreateNoteModal extends Modal {
 				return;
 			}
 
-			// Default Text Preparation for File with YAML and Date
-			let defaultNewFileText = stripIndents`
-			---
-			${this.plugin.settings.yamlKey}: ${dayjs(this.destinationDate).format(this.plugin.settings.dateFormat)}
-			---
-			`;
+			// Date YAML for the new note. Weekly notes don't get it, so they don't show up on a day
+			const { yamlKey, dateFormat, dateSource } = this.plugin.settings;
+			const frontmatter =
+				!this.weekly && dateSource === 'yaml'
+					? { [yamlKey]: this.plugin.formatDate(this.destinationDate, dateFormat) }
+					: undefined;
 
-			// Create the MD File and close the modal
-			await createNewMarkdownFile(
-				this.plugin,
-				defFolder as TFolder,
-				newFileName,
-				this.plugin.settings.dateSource === 'yaml' ? defaultNewFileText : ''
-			);
+			// Create the MD File, open it and close the modal
+			const newFile = await createNoteFromTemplate({
+				plugin: this.plugin,
+				folder: defFolder as TFolder,
+				fileName: newFileName,
+				date: this.weekly ? getStartOfWeek(this.plugin, this.destinationDate) : this.destinationDate,
+				templatePath: this.weekly ? this.plugin.settings.weeklyNoteTemplate : this.plugin.settings.dailyNoteTemplate,
+				frontmatter: frontmatter,
+			});
+			openFile({ file: newFile, plugin: this.plugin, newLeaf: false });
 
 			thisModal.close();
 		};

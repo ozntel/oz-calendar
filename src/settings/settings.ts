@@ -1,6 +1,8 @@
 import OZCalendarPlugin from 'main';
-import { PluginSettingTab, App, Setting } from 'obsidian';
-import { FolderSuggest } from 'settings/suggestor';
+import { PluginSettingTab, App, Setting, debounce } from 'obsidian';
+import { FileSuggest, FolderSuggest } from 'settings/suggestor';
+import { getDefaultWeeklyNoteFormat } from '../util/weeklyNotes';
+import { checkTemplate, getTemplatesFolder, isTemplaterEnabled } from '../util/templates';
 
 export type OpenFileBehaviourType = 'new-tab' | 'new-tab-group' | 'current-tab' | 'obsidian-default';
 export type SortingOption = 'name' | 'name-rev';
@@ -17,6 +19,7 @@ export interface OZCalendarPluginSettings {
 	dateFormat: string;
 	defaultFolder: string;
 	defaultFileNamePrefix: string;
+	dailyNoteTemplate: string;
 	fixedCalendar: boolean;
 	showDestinationFolderDuringCreate: boolean;
 	allowSlashhDuringCreate: boolean;
@@ -26,6 +29,12 @@ export interface OZCalendarPluginSettings {
 	newNoteCancelButtonReverse: boolean;
 	fileNameOverflowBehaviour: OverflowBehaviour;
 	showWeekNumbers: boolean;
+	useObsidianLanguage: boolean;
+	weeklyNotesEnabled: boolean;
+	weeklyNoteFormat: string;
+	weeklyNotesFolder: string;
+	weeklyNoteTemplate: string;
+	excludeWeeklyNotesFromDays: boolean;
 }
 
 export const DEFAULT_SETTINGS: OZCalendarPluginSettings = {
@@ -33,9 +42,10 @@ export const DEFAULT_SETTINGS: OZCalendarPluginSettings = {
 	calendarType: 'ISO 8601',
 	dateSource: 'yaml',
 	yamlKey: 'created',
-	dateFormat: 'YYYY-MM-DD hh:mm:ss',
+	dateFormat: 'YYYY-MM-DD HH:mm:ss',
 	defaultFolder: '/',
 	defaultFileNamePrefix: 'YYYY-MM-DD',
+	dailyNoteTemplate: '',
 	fixedCalendar: true,
 	showDestinationFolderDuringCreate: true,
 	allowSlashhDuringCreate: false,
@@ -45,6 +55,12 @@ export const DEFAULT_SETTINGS: OZCalendarPluginSettings = {
 	newNoteCancelButtonReverse: false,
 	fileNameOverflowBehaviour: 'hide',
 	showWeekNumbers: false,
+	useObsidianLanguage: true,
+	weeklyNotesEnabled: false,
+	weeklyNoteFormat: '',
+	weeklyNotesFolder: '',
+	weeklyNoteTemplate: '',
+	excludeWeeklyNotesFromDays: true,
 };
 
 export class OZCalendarPluginSettingsTab extends PluginSettingTab {
@@ -128,6 +144,22 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 			});
 
 		new Setting(containerEl)
+			.setName('Use Obsidian Language for Dates')
+			.setDesc(
+				`Show month and weekday names in the language set in Obsidian (Settings → General → Language).
+                This applies to the calendar view, new note titles and the dates read from your notes. If your
+                date format contains month or weekday names (e.g. MMMM, ddd), notes using English names won't be recognised anymore.`
+			)
+			.addToggle((toggle) => {
+				toggle.setValue(this.plugin.settings.useObsidianLanguage).onChange((newValue) => {
+					this.plugin.settings.useObsidianLanguage = newValue;
+					this.plugin.saveSettings();
+					this.plugin.OZCALENDARDAYS_STATE = this.plugin.getNotesWithDates();
+					this.plugin.calendarForceUpdate();
+				});
+			});
+
+		new Setting(containerEl)
 			.setName('Open File Behaviour')
 			.setDesc('Select the behaviour you want to have when you click on file name in the calendar view')
 			.addDropdown((dropdown) => {
@@ -160,13 +192,15 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 
 		containerEl.createEl('h2', { text: 'YAML, File Name and Date Format Settings' });
 
-		containerEl.createEl('p', {
-			text: `
-            When you make a change under this section for YAML Key and Date Format, make sure that
-            you also use "Reload Plugin" button so that the changes can be activated.
-            `,
-			cls: 'setting-item-description',
-		});
+		// Rescan the vault once the user stops typing in YAML Key or Date Format
+		const rescanNotes = debounce(
+			() => {
+				this.plugin.OZCALENDARDAYS_STATE = this.plugin.getNotesWithDates();
+				this.plugin.calendarForceUpdate();
+			},
+			1000,
+			true
+		);
 
 		new Setting(containerEl)
 			.setName('Date Source')
@@ -185,14 +219,7 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 						this.plugin.OZCALENDARDAYS_STATE = this.plugin.getNotesWithDates();
 						this.plugin.calendarForceUpdate();
 						// If YAML selected, show the YAML key below, or hide if changed back to filename
-						let yamlKeySettingEl = document.querySelector('.oz-calendar-setting-yaml-key-value');
-						if (yamlKeySettingEl) {
-							if (newValue === 'filename') {
-								yamlKeySettingEl.addClass('oz-calendar-custom-hidden');
-							} else {
-								yamlKeySettingEl.removeClass('oz-calendar-custom-hidden');
-							}
-						}
+						yamlKeySetting.settingEl.toggleClass('oz-calendar-custom-hidden', newValue === 'filename');
 					});
 			});
 
@@ -204,6 +231,7 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 				text.setValue(this.plugin.settings.yamlKey).onChange((newValue) => {
 					this.plugin.settings.yamlKey = newValue;
 					this.plugin.saveSettings();
+					rescanNotes();
 				});
 			});
 
@@ -214,23 +242,13 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 			.setDesc(
 				`Set the Date format you are using within the YAML key or File Name provided above. 
                 If you are using File Name, make sure that you dont have any special characters since Obsidian doesnt
-                support special characters in the file name like colon. Reload the plugin using the following button
-                in case you change this value`
+                support special characters in the file name like colon.`
 			)
 			.addText((text) => {
 				text.setValue(this.plugin.settings.dateFormat).onChange((newValue) => {
 					this.plugin.settings.dateFormat = newValue;
 					this.plugin.saveSettings();
-				});
-			});
-
-		new Setting(containerEl)
-			.setName('Reload the plugin')
-			.setDesc('Make sure that you reload the plugin if you changed YAML key or Date Format')
-			.addButton((button) => {
-				button.setButtonText('Reload Plugin');
-				button.onClick(() => {
-					this.plugin.reloadPlugin();
+					rescanNotes();
 				});
 			});
 
@@ -268,7 +286,7 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 			.setName('Default Folder Location')
 			.setDesc('Select the default folder, under which the new files should be saved when use plugin + icon')
 			.addSearch((cb) => {
-				new FolderSuggest(cb.inputEl);
+				new FolderSuggest(this.app, cb.inputEl);
 				cb.setPlaceholder('Example: folder1/folder2')
 					.setValue(this.plugin.settings.defaultFolder)
 					.onChange((new_folder) => {
@@ -335,6 +353,106 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 				});
 			});
 
+		containerEl.createEl('h2', { text: 'Weekly Notes Settings' });
+
+		new Setting(containerEl)
+			.setName('Enable Weekly Notes')
+			.setDesc(
+				`Click on a week number in the calendar to open the weekly note of that week, or to create it if it
+                doesn't exist yet. Week numbers with an existing weekly note are highlighted. Make sure that
+                "Show Week Numbers" is enabled.`
+			)
+			.addToggle((toggle) => {
+				toggle.setValue(this.plugin.settings.weeklyNotesEnabled).onChange((newValue) => {
+					this.plugin.settings.weeklyNotesEnabled = newValue;
+					this.plugin.saveSettings();
+					this.plugin.OZCALENDARDAYS_STATE = this.plugin.getNotesWithDates();
+					this.plugin.calendarForceUpdate();
+				});
+			});
+
+		new Setting(containerEl)
+			.setName('Weekly Note Format')
+			.setDesc(
+				`File name format of the weekly notes. Leave empty to use the format matching the Calendar Type
+                (ISO 8601: GGGG-[W]WW, US: gggg-[W]ww).`
+			)
+			.addText((text) => {
+				text.setPlaceholder(getDefaultWeeklyNoteFormat(this.plugin))
+					.setValue(this.plugin.settings.weeklyNoteFormat)
+					.onChange((newValue) => {
+						this.plugin.settings.weeklyNoteFormat = newValue.trim();
+						this.plugin.saveSettings();
+						this.plugin.calendarForceUpdate();
+					});
+			});
+
+		new Setting(containerEl)
+			.setName('Weekly Notes Folder')
+			.setDesc('Folder of the weekly notes. Leave empty to use the Default Folder Location of the new notes.')
+			.addSearch((cb) => {
+				new FolderSuggest(this.app, cb.inputEl);
+				cb.setPlaceholder(this.plugin.settings.defaultFolder)
+					.setValue(this.plugin.settings.weeklyNotesFolder)
+					.onChange((newFolder) => {
+						this.plugin.settings.weeklyNotesFolder = newFolder;
+						this.plugin.saveSettings();
+						this.plugin.OZCALENDARDAYS_STATE = this.plugin.getNotesWithDates();
+						this.plugin.calendarForceUpdate();
+					});
+			});
+
+		new Setting(containerEl)
+			.setName('Hide Weekly Notes from Days')
+			.setDesc(
+				`Don't show the notes in the Weekly Notes Folder as dots on the days of the calendar.
+                Only applies if a separate Weekly Notes Folder is set.`
+			)
+			.addToggle((toggle) => {
+				toggle.setValue(this.plugin.settings.excludeWeeklyNotesFromDays).onChange((newValue) => {
+					this.plugin.settings.excludeWeeklyNotesFromDays = newValue;
+					this.plugin.saveSettings();
+					this.plugin.OZCALENDARDAYS_STATE = this.plugin.getNotesWithDates();
+					this.plugin.calendarForceUpdate();
+				});
+			});
+
+		containerEl.createEl('h2', { text: 'Templates' });
+
+		// Explain which template syntax is going to be processed, depending on Templater being enabled
+		const templateStatusEl = containerEl.createEl('p', { cls: 'setting-item-description oz-calendar-template-status' });
+		if (isTemplaterEnabled(this.plugin)) {
+			templateStatusEl.createEl('strong', { text: '✅ Templater is enabled. ' });
+			templateStatusEl.appendText(
+				'<% … %> commands are run by Templater. {{date}}, {{title}}, {{time}}, {{date:FORMAT}} are filled in by OZ Calendar first, using the date of the note.'
+			);
+		} else {
+			templateStatusEl.createEl('strong', { text: 'ℹ️ Templater is not enabled. ' });
+			templateStatusEl.appendText(
+				'Only {{date}}, {{title}}, {{time}}, {{date:FORMAT}} are filled in, using the date of the note. <% … %> commands stay as plain text.'
+			);
+		}
+		templateStatusEl.createEl('br');
+		templateStatusEl.appendText(
+			"The {{…}} syntax is the same as the core Templates plugin, but it is filled in by OZ Calendar, so it doesn't depend on the core Templates settings."
+		);
+
+		this.addTemplateSetting({
+			name: 'New Note Template',
+			desc: 'Optional template file for the notes created with the calendar.',
+			placeholder: 'Example: Templates/Daily.md',
+			getValue: () => this.plugin.settings.dailyNoteTemplate,
+			setValue: (value) => (this.plugin.settings.dailyNoteTemplate = value),
+		});
+
+		this.addTemplateSetting({
+			name: 'Weekly Note Template',
+			desc: 'Optional template file for the weekly notes. {{date}} is the first day of the week.',
+			placeholder: 'Example: Templates/Weekly.md',
+			getValue: () => this.plugin.settings.weeklyNoteTemplate,
+			setValue: (value) => (this.plugin.settings.weeklyNoteTemplate = value),
+		});
+
 		containerEl.createEl('h2', { text: 'Style Settings' });
 
 		containerEl.createEl('p', {
@@ -372,5 +490,34 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 						this.plugin.calendarForceUpdate();
 					});
 			});
+	}
+	/**
+	 * Adds a template file setting, which shows a warning if the template is missing or can't be fully processed
+	 */
+	addTemplateSetting(params: {
+		name: string;
+		desc: string;
+		placeholder: string;
+		getValue: () => string;
+		setValue: (value: string) => void;
+	}) {
+		const setting = new Setting(this.containerEl).setName(params.name).setDesc(params.desc);
+		const warningEl = setting.descEl.createDiv({ cls: 'oz-calendar-template-warning' });
+		const updateWarning = async () => {
+			const warning = await checkTemplate(this.plugin, params.getValue());
+			warningEl.setText(warning ? '⚠️ ' + warning : '');
+		};
+
+		setting.addSearch((cb) => {
+			new FileSuggest(this.app, cb.inputEl, () => getTemplatesFolder(this.plugin));
+			cb.setPlaceholder(params.placeholder)
+				.setValue(params.getValue())
+				.onChange((newFile) => {
+					params.setValue(newFile);
+					this.plugin.saveSettings();
+					updateWarning();
+				});
+		});
+		updateWarning();
 	}
 }

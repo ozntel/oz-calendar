@@ -94,6 +94,11 @@ settings:
 	display: flex;
 }
 
+/* Keep the desktop button padding for navigation on tablets */
+.is-tablet .oz-calendar-plugin-view .react-calendar__navigation button {
+	padding: var(--size-4-1) var(--size-4-3);
+}
+
 .oz-calendar-plugin-view .react-calendar__month-view__weekdays {
 	text-align: center;
 	text-transform: uppercase;
@@ -118,7 +123,10 @@ settings:
 	opacity: 0.5;
 }
 
-.oz-calendar-plugin-view .react-calendar__tile {
+/* Higher specificity than Obsidian's ".is-tablet button:not(.clickable-icon)" padding,
+   which otherwise makes the tiles wider than 1/7 and wraps the week into 6 columns.
+   Not limited to buttons, since week numbers are rendered as div tiles */
+.oz-calendar-plugin-view .react-calendar .react-calendar__tile {
 	max-width: 100%;
 	padding: 10px 6.6667px;
 	background: none;
@@ -286,6 +294,24 @@ settings:
 	font-size: var(--nav-item-size);
 }
 
+/* Week numbers are buttons when weekly notes are enabled */
+.oz-calendar-plugin-view .react-calendar__month-view__weekNumbers button.react-calendar__tile {
+	color: inherit;
+	font-size: inherit;
+	background-color: transparent;
+	box-shadow: none;
+}
+
+.oz-calendar-plugin-view .react-calendar__month-view__weekNumbers button.react-calendar__tile:hover {
+	background: var(--background-secondary-alt);
+}
+
+.oz-calendar-plugin-view .react-calendar__month-view__weekNumbers .oz-calendar-week-has-note span {
+	font-weight: bold;
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+
 /*  END - Fixed Calendar */
 
 .oz-calendar-modal-inputel {
@@ -318,4 +344,13 @@ settings:
 	text-overflow: ellipsis;
 	overflow: hidden;
 	white-space: nowrap;
+}
+
+.oz-calendar-template-warning {
+	color: var(--text-warning);
+	margin-top: 4px;
+}
+
+.oz-calendar-template-warning:empty {
+	display: none;
 }

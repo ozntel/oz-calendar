@@ -80,7 +80,7 @@ export default function NoteListComponent(params: NoteListComponentParams) {
 			const fileMenu = new Menu();
 			plugin.app.workspace.trigger('file-menu', fileMenu, abstractFile, VIEW_TYPE);
 			if (isMouseEvent(e)) {
-				fileMenu.showAtPosition({ x: e.pageX, y: e.pageY });
+				fileMenu.showAtMouseEvent(e.nativeEvent);
 			} else {
 				// @ts-ignore
 				fileMenu.showAtPosition({ x: e.nativeEvent.locationX, y: e.nativeEvent.locationY });
@@ -101,7 +101,7 @@ export default function NoteListComponent(params: NoteListComponentParams) {
 					className="oz-calendar-nav-action-middle"
 					aria-label="Show active date on calendar"
 					onClick={() => setActiveStartDate(selectedDay)}>
-					{dayjs(selectedDay).format('DD MMM YYYY')}
+					{plugin.formatDate(selectedDay, 'DD MMM YYYY')}
 				</div>
 				<div className="oz-calendar-nav-action-right">
 					<BsArrowRight size={22} aria-label="Go to next day" onClick={() => setNewSelectedDay(1)} />
