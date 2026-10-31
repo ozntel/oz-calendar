@@ -1,6 +1,7 @@
 import { Notice, TAbstractFile, TFile, TFolder, moment, normalizePath } from 'obsidian';
 import OZCalendarPlugin from '../main';
-import { createNewMarkdownFile, openFile } from './utils';
+import { openFile } from './utils';
+import { createNoteFromTemplate } from './templates';
 import { CreateNoteModal } from '../modal';
 
 // Obsidian's bundled moment follows the language set in Obsidian
@@ -62,17 +63,6 @@ export const isExcludedWeeklyNote = (plugin: OZCalendarPlugin, file: TAbstractFi
 	return file.path.startsWith(folder + '/');
 };
 
-export const getWeeklyNoteContent = async (plugin: OZCalendarPlugin, date: Date, title: string): Promise<string> => {
-	const templatePath = plugin.settings.weeklyNoteTemplate;
-	if (!templatePath) return '';
-	const templateFile = plugin.app.vault.getAbstractFileByPath(normalizePath(templatePath));
-	if (!(templateFile instanceof TFile)) return '';
-	const template = await plugin.app.vault.cachedRead(templateFile);
-	return template
-		.replace(/{{\s*title\s*}}/gi, title)
-		.replace(/{{\s*date\s*}}/gi, obsidianMoment(getStartOfWeek(plugin, date)).format('YYYY-MM-DD'));
-};
-
 /**
  * Opens the weekly note of the week of the date. If it doesn't exist, creates it directly or using the modal
  * depending on the "Show Destination Folder during Create" setting
@@ -97,6 +87,12 @@ export const openWeeklyNote = async (plugin: OZCalendarPlugin, date: Date, newLe
 		new Notice('Weekly notes folder couldnt be found in the Vault');
 		return;
 	}
-	const fileName = getWeeklyNoteName(plugin, date);
-	await createNewMarkdownFile(plugin, folder, fileName, await getWeeklyNoteContent(plugin, date, fileName));
+	const newFile = await createNoteFromTemplate({
+		plugin: plugin,
+		folder: folder,
+		fileName: getWeeklyNoteName(plugin, date),
+		date: getStartOfWeek(plugin, date),
+		templatePath: plugin.settings.weeklyNoteTemplate,
+	});
+	openFile({ file: newFile, plugin: plugin, newLeaf: newLeaf });
 };

@@ -1,4 +1,4 @@
-import { TFile, TFolder } from 'obsidian';
+import { TFile } from 'obsidian';
 import OZCalendarPlugin from '../main';
 
 /**
@@ -16,18 +16,6 @@ export const openFile = (params: {
 	if (!newLeaf && leafBySplit) leaf = plugin.app.workspace.createLeafBySplit(leaf, 'vertical');
 	plugin.app.workspace.setActiveLeaf(leaf, { focus: true });
 	leaf.openFile(file, { eState: { focus: true } });
-};
-
-export const createNewMarkdownFile = async (
-	plugin: OZCalendarPlugin,
-	folder: TFolder,
-	newFileName: string,
-	content?: string
-) => {
-	// @ts-ignore
-	const newFile = await plugin.app.fileManager.createNewMarkdownFile(folder, newFileName);
-	if (content && content !== '') await plugin.app.vault.modify(newFile, content);
-	openFile({ file: newFile, plugin: plugin, newLeaf: false });
 };
 
 export function isMouseEvent(e: React.TouchEvent | React.MouseEvent): e is React.MouseEvent {

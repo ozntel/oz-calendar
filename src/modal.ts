@@ -1,9 +1,9 @@
 import OZCalendarPlugin from 'main';
 import { Modal, TFolder, Notice } from 'obsidian';
-import { createNewMarkdownFile } from './util/utils';
-import { stripIndents } from 'common-tags';
+import { openFile } from './util/utils';
+import { createNoteFromTemplate } from './util/templates';
 import { FolderSuggest } from 'settings/suggestor';
-import { getWeeklyNoteContent, getWeeklyNoteName, getWeeklyNotesFolder } from './util/weeklyNotes';
+import { getStartOfWeek, getWeeklyNoteName, getWeeklyNotesFolder } from './util/weeklyNotes';
 
 export class CreateNoteModal extends Modal {
 	plugin: OZCalendarPlugin;
@@ -84,22 +84,23 @@ export class CreateNoteModal extends Modal {
 				return;
 			}
 
-			// Default Text Preparation for File with YAML and Date
-			let defaultNewFileText = stripIndents`
-			---
-			${this.plugin.settings.yamlKey}: ${this.plugin.formatDate(this.destinationDate, this.plugin.settings.dateFormat)}
-			---
-			`;
+			// Date YAML for the new note. Weekly notes don't get it, so they don't show up on a day
+			const { yamlKey, dateFormat, dateSource } = this.plugin.settings;
+			const frontmatter =
+				!this.weekly && dateSource === 'yaml'
+					? { [yamlKey]: this.plugin.formatDate(this.destinationDate, dateFormat) }
+					: undefined;
 
-			// Weekly notes use the template instead of the date YAML, so they don't show up on a day
-			let newFileText = this.weekly
-				? await getWeeklyNoteContent(this.plugin, this.destinationDate, newFileName)
-				: this.plugin.settings.dateSource === 'yaml'
-				? defaultNewFileText
-				: '';
-
-			// Create the MD File and close the modal
-			await createNewMarkdownFile(this.plugin, defFolder as TFolder, newFileName, newFileText);
+			// Create the MD File, open it and close the modal
+			const newFile = await createNoteFromTemplate({
+				plugin: this.plugin,
+				folder: defFolder as TFolder,
+				fileName: newFileName,
+				date: this.weekly ? getStartOfWeek(this.plugin, this.destinationDate) : this.destinationDate,
+				templatePath: this.weekly ? this.plugin.settings.weeklyNoteTemplate : this.plugin.settings.dailyNoteTemplate,
+				frontmatter: frontmatter,
+			});
+			openFile({ file: newFile, plugin: this.plugin, newLeaf: false });
 
 			thisModal.close();
 		};

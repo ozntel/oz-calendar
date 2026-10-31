@@ -345,3 +345,12 @@ settings:
 	overflow: hidden;
 	white-space: nowrap;
 }
+
+.oz-calendar-template-warning {
+	color: var(--text-warning);
+	margin-top: 4px;
+}
+
+.oz-calendar-template-warning:empty {
+	display: none;
+}

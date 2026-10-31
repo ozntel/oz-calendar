@@ -36,17 +36,27 @@ export class FolderSuggest extends AbstractInputSuggest<TFolder> {
 
 export class FileSuggest extends AbstractInputSuggest<TFile> {
 	private inputEl: HTMLInputElement;
+	private getPreferredFolder?: () => string | null;
 
-	constructor(app: App, inputEl: HTMLInputElement) {
+	/**
+	 * @param getPreferredFolder Optional, files within this folder are suggested first (e.g. the templates folder)
+	 */
+	constructor(app: App, inputEl: HTMLInputElement, getPreferredFolder?: () => string | null) {
 		super(app, inputEl);
 		this.inputEl = inputEl;
+		this.getPreferredFolder = getPreferredFolder;
 	}
 
 	getSuggestions(inputStr: string): TFile[] {
 		const lowerCaseInputStr = inputStr.toLowerCase();
-		return this.app.vault
+		const files = this.app.vault
 			.getMarkdownFiles()
 			.filter((file) => file.path.toLowerCase().contains(lowerCaseInputStr));
+
+		const preferredFolder = this.getPreferredFolder?.();
+		if (!preferredFolder || preferredFolder === '/') return files;
+		const isInPreferredFolder = (file: TFile) => file.path.startsWith(preferredFolder + '/');
+		return [...files.filter(isInPreferredFolder), ...files.filter((file) => !isInPreferredFolder(file))];
 	}
 
 	renderSuggestion(file: TFile, el: HTMLElement): void {

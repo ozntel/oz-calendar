@@ -56,6 +56,23 @@ You can define this in the plugin settings:
 -   And the **File Prefix Date Format** in case you prefer your file names to start with a certain date format
 -   You can right-click any date in the calendar view to create a note for a certain date
 -   The plus icon is defaulted to create a note for today
+-   An optional **New Note Template** (see [Templates](#templates))
+
+## Templates
+
+You can set a template file for the new notes (**New Note Template**) and for the weekly notes (**Weekly Note Template**) under the **Templates** section of the plugin settings. Which syntax is processed depends on whether the **Templater** plugin is enabled. The settings page shows which one applies to your vault and warns you if a template can't be fully processed.
+
+| | `{{date}}`, `{{title}}`, `{{time}}`, `{{date:FORMAT}}` | `<% ... %>` Templater commands |
+| --- | --- | --- |
+| Templater enabled | Filled in by OZ Calendar (first) | Run by Templater |
+| Templater not enabled | Filled in by OZ Calendar | Left as plain text |
+
+The `{{...}}` syntax is the same as the core **Templates** plugin, but it is filled in by OZ Calendar, so it works without the core Templates plugin and doesn't depend on its settings.
+
+
+-   Core Templates variables are always replaced: `{{title}}`, `{{date}}`, `{{time}}`, `{{date:FORMAT}}` and `{{time:FORMAT}}` (e.g. `{{date:dddd, D MMMM YYYY}}`). The date is the **date of the note** (the day you create the note for, or the first day of the week for weekly notes), not today.
+-   If the **Templater** plugin is enabled, Templater commands (`<% ... %>`) are processed as well. Note that `tp.date.now()` is the current date. To use the date of the note, use `{{date}}` (it is replaced before Templater runs), e.g. `<% tp.date.now("YYYY-MM-DD", 7, "{{date}}", "YYYY-MM-DD") %>` for a week after the note date.
+-   If the date source is YAML, the YAML key with the date is added to the note's frontmatter, unless the template already has it.
 
 ## Weekly Notes
 
@@ -65,7 +82,7 @@ Enable **Weekly Notes** and **Show Week Numbers** in the plugin settings to use 
 -   Week numbers with an existing weekly note are shown bold and underlined.
 -   **Weekly Note Format**: leave it empty to use the format matching the Calendar Type (ISO 8601: `GGGG-[W]WW` → `2026-W44`, US: `gggg-[W]ww`).
 -   **Weekly Notes Folder**: leave it empty to use the default folder of the new notes. If you set a separate folder, the weekly notes are not shown as dots on the days (you can change this with **Hide Weekly Notes from Days**).
--   **Weekly Note Template**: optional template file. `{{title}}` is replaced with the note name and `{{date}}` with the first day of the week.
+-   **Weekly Note Template**: optional template file, see [Templates](#templates). `{{date}}` is the first day of the week.
 
 Commands: **Open This Week's Note**, **Open Previous Week's Note** and **Open Next Week's Note**.
 

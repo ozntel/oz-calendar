@@ -2,6 +2,7 @@ import OZCalendarPlugin from 'main';
 import { PluginSettingTab, App, Setting, debounce } from 'obsidian';
 import { FileSuggest, FolderSuggest } from 'settings/suggestor';
 import { getDefaultWeeklyNoteFormat } from '../util/weeklyNotes';
+import { checkTemplate, getTemplatesFolder, isTemplaterEnabled } from '../util/templates';
 
 export type OpenFileBehaviourType = 'new-tab' | 'new-tab-group' | 'current-tab' | 'obsidian-default';
 export type SortingOption = 'name' | 'name-rev';
@@ -18,6 +19,7 @@ export interface OZCalendarPluginSettings {
 	dateFormat: string;
 	defaultFolder: string;
 	defaultFileNamePrefix: string;
+	dailyNoteTemplate: string;
 	fixedCalendar: boolean;
 	showDestinationFolderDuringCreate: boolean;
 	allowSlashhDuringCreate: boolean;
@@ -43,6 +45,7 @@ export const DEFAULT_SETTINGS: OZCalendarPluginSettings = {
 	dateFormat: 'YYYY-MM-DD HH:mm:ss',
 	defaultFolder: '/',
 	defaultFileNamePrefix: 'YYYY-MM-DD',
+	dailyNoteTemplate: '',
 	fixedCalendar: true,
 	showDestinationFolderDuringCreate: true,
 	allowSlashhDuringCreate: false,
@@ -400,22 +403,6 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 			});
 
 		new Setting(containerEl)
-			.setName('Weekly Note Template')
-			.setDesc(
-				`Optional template file for the new weekly notes. {{title}} is replaced with the note name and
-                {{date}} with the first day of the week (YYYY-MM-DD).`
-			)
-			.addSearch((cb) => {
-				new FileSuggest(this.app, cb.inputEl);
-				cb.setPlaceholder('Example: Templates/Weekly.md')
-					.setValue(this.plugin.settings.weeklyNoteTemplate)
-					.onChange((newFile) => {
-						this.plugin.settings.weeklyNoteTemplate = newFile;
-						this.plugin.saveSettings();
-					});
-			});
-
-		new Setting(containerEl)
 			.setName('Hide Weekly Notes from Days')
 			.setDesc(
 				`Don't show the notes in the Weekly Notes Folder as dots on the days of the calendar.
@@ -429,6 +416,42 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 					this.plugin.calendarForceUpdate();
 				});
 			});
+
+		containerEl.createEl('h2', { text: 'Templates' });
+
+		// Explain which template syntax is going to be processed, depending on Templater being enabled
+		const templateStatusEl = containerEl.createEl('p', { cls: 'setting-item-description oz-calendar-template-status' });
+		if (isTemplaterEnabled(this.plugin)) {
+			templateStatusEl.createEl('strong', { text: '✅ Templater is enabled. ' });
+			templateStatusEl.appendText(
+				'<% … %> commands are run by Templater. {{date}}, {{title}}, {{time}}, {{date:FORMAT}} are filled in by OZ Calendar first, using the date of the note.'
+			);
+		} else {
+			templateStatusEl.createEl('strong', { text: 'ℹ️ Templater is not enabled. ' });
+			templateStatusEl.appendText(
+				'Only {{date}}, {{title}}, {{time}}, {{date:FORMAT}} are filled in, using the date of the note. <% … %> commands stay as plain text.'
+			);
+		}
+		templateStatusEl.createEl('br');
+		templateStatusEl.appendText(
+			"The {{…}} syntax is the same as the core Templates plugin, but it is filled in by OZ Calendar, so it doesn't depend on the core Templates settings."
+		);
+
+		this.addTemplateSetting({
+			name: 'New Note Template',
+			desc: 'Optional template file for the notes created with the calendar.',
+			placeholder: 'Example: Templates/Daily.md',
+			getValue: () => this.plugin.settings.dailyNoteTemplate,
+			setValue: (value) => (this.plugin.settings.dailyNoteTemplate = value),
+		});
+
+		this.addTemplateSetting({
+			name: 'Weekly Note Template',
+			desc: 'Optional template file for the weekly notes. {{date}} is the first day of the week.',
+			placeholder: 'Example: Templates/Weekly.md',
+			getValue: () => this.plugin.settings.weeklyNoteTemplate,
+			setValue: (value) => (this.plugin.settings.weeklyNoteTemplate = value),
+		});
 
 		containerEl.createEl('h2', { text: 'Style Settings' });
 
@@ -467,5 +490,34 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 						this.plugin.calendarForceUpdate();
 					});
 			});
+	}
+	/**
+	 * Adds a template file setting, which shows a warning if the template is missing or can't be fully processed
+	 */
+	addTemplateSetting(params: {
+		name: string;
+		desc: string;
+		placeholder: string;
+		getValue: () => string;
+		setValue: (value: string) => void;
+	}) {
+		const setting = new Setting(this.containerEl).setName(params.name).setDesc(params.desc);
+		const warningEl = setting.descEl.createDiv({ cls: 'oz-calendar-template-warning' });
+		const updateWarning = async () => {
+			const warning = await checkTemplate(this.plugin, params.getValue());
+			warningEl.setText(warning ? '⚠️ ' + warning : '');
+		};
+
+		setting.addSearch((cb) => {
+			new FileSuggest(this.app, cb.inputEl, () => getTemplatesFolder(this.plugin));
+			cb.setPlaceholder(params.placeholder)
+				.setValue(params.getValue())
+				.onChange((newFile) => {
+					params.setValue(newFile);
+					this.plugin.saveSettings();
+					updateWarning();
+				});
+		});
+		updateWarning();
 	}
 }
