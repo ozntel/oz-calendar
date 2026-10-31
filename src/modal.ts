@@ -64,7 +64,8 @@ export class CreateNoteModal extends Modal {
 		});
 
 		const onClickCreateButton = async () => {
-			let newFileName = fileNameInputEl.value;
+			// Trim the space left after the prefilled date when no title is added
+			let newFileName = fileNameInputEl.value.trim();
 
 			if (newFileName === '') {
 				new Notice('You didnt provide file name');

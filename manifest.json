@@ -1,7 +1,7 @@
 {
 	"id": "oz-calendar",
 	"name": "OZ Calendar",
-	"version": "0.3.5",
+	"version": "0.3.6",
 	"minAppVersion": "1.4.10",
 	"description": "View your notes in Calendar using any YAML key with date",
 	"author": "Ozan Tellioglu",

@@ -44,7 +44,7 @@ The default date source is the YAML Key ("created") as mentioned above. If you w
 
 Changes are applied right away, there is no need to reload the plugin.
 
-> Both YAML and File Name options can include additional characters in the file name. As long as the custom date format defined in the plugin settings is at the beginning of the YAML key or File Name, the plugin will be smart enough to parse only the beginning of the key/filename. For instance, if you have a file name '**2023-03-10 This is the file**' and your date format defined in the plugin settings is **YYYY-MM-DD**, it will be parsed just fine in the calendar.
+> Both YAML and File Name options can include additional characters. For the YAML option, the date needs to be at the beginning of the value. For the File Name option, the date can be anywhere in the file name and the first date matching the custom date format is used. For instance, with the date format **YYYY-MM-DD**, file names like '**2023-03-10 This is the file**', '**My file, 2023-03-10**' or '**Book 1, 2023-03-10**' will all be parsed just fine in the calendar. The date in the file name needs to match the date format exactly (e.g. '**2023-3-10**' won't match **YYYY-MM-DD**).
 
 ## Create File Option
 

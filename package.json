@@ -1,12 +1,13 @@
 {
 	"name": "oz-calendar",
-	"version": "0.3.5",
+	"version": "0.3.6",
 	"description": "View your notes in Calendar using any YAML key with date",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
 		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
-		"version": "node version-bump.mjs && git add manifest.json versions.json"
+		"version": "node version-bump.mjs && git add manifest.json versions.json",
+		"release": "node release.mjs"
 	},
 	"keywords": [],
 	"author": "",

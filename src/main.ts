@@ -2,11 +2,13 @@ import { CachedMetadata, Menu, Plugin, TAbstractFile, TFile, addIcon, moment } f
 import { OZCalendarView, VIEW_TYPE } from 'view';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
+import advancedFormat from 'dayjs/plugin/advancedFormat';
 import { DayChangeCommandAction, OZCalendarDaysMap, fileToOZItem } from 'types';
 import { OZCAL_ICON } from './util/icons';
 import { OZCalendarPluginSettings, DEFAULT_SETTINGS, OZCalendarPluginSettingsTab } from './settings/settings';
 import { CreateNoteModal } from 'modal';
 import { isExcludedWeeklyNote, openWeeklyNote } from './util/weeklyNotes';
+import { findDateCandidates } from './util/utils';
 
 // Obsidian's bundled moment follows the language set in Obsidian
 const obsidianMoment = moment as unknown as typeof import('moment');
@@ -28,6 +30,8 @@ export default class OZCalendarPlugin extends Plugin {
 		addIcon('OZCAL_ICON', OZCAL_ICON);
 
 		dayjs.extend(customParseFormat);
+		// Needed for strict parsing of tokens like Do, which dayjs can only format with this plugin
+		dayjs.extend(advancedFormat);
 
 		// Load Settings
 		this.addSettingTab(new OZCalendarPluginSettingsTab(this.app, this));
@@ -211,10 +215,22 @@ export default class OZCalendarPlugin extends Plugin {
 	 * Parses a date string with the given format. When "Use Obsidian Language for Dates" is enabled,
 	 * month and weekday names are matched in the language set in Obsidian.
 	 */
-	parseDate = (input: string, format: string): dayjs.Dayjs => {
-		if (!this.settings.useObsidianLanguage) return dayjs(input, format);
-		const parsed = obsidianMoment(input, format);
+	parseDate = (input: string, format: string, strict: boolean = false): dayjs.Dayjs => {
+		if (!this.settings.useObsidianLanguage) return dayjs(input, format, strict);
+		const parsed = obsidianMoment(input, format, strict);
 		return parsed.isValid() ? dayjs(parsed.toDate()) : dayjs('invalid');
+	};
+
+	/**
+	 * Finds the first date written in the Date Format anywhere in the file name, e.g. "Book 1, 2026-10-31"
+	 * with "YYYY-MM-DD". Other numbers in the name are ignored since each candidate is parsed strictly.
+	 */
+	parseFileNameDate = (file: TFile): dayjs.Dayjs => {
+		for (let candidate of findDateCandidates(file.basename, this.settings.dateFormat)) {
+			let parsed = this.parseDate(candidate, this.settings.dateFormat, true);
+			if (parsed.isValid()) return parsed;
+		}
+		return dayjs('invalid');
 	};
 
 	/**
@@ -288,9 +304,9 @@ export default class OZCalendarPlugin extends Plugin {
 		if (
 			this.settings.dateSource === 'filename' &&
 			!isExcludedWeeklyNote(this, file) &&
-			this.parseDate(file.name, this.settings.dateFormat).isValid()
+			this.parseFileNameDate(file).isValid()
 		) {
-			let parsedDayISOString = this.parseDate(file.name, this.settings.dateFormat).format('YYYY-MM-DD');
+			let parsedDayISOString = this.parseFileNameDate(file).format('YYYY-MM-DD');
 			if (parsedDayISOString in this.OZCALENDARDAYS_STATE) {
 				this.OZCALENDARDAYS_STATE[parsedDayISOString] = [
 					...this.OZCALENDARDAYS_STATE[parsedDayISOString],
@@ -319,8 +335,8 @@ export default class OZCalendarPlugin extends Plugin {
 			this.calendarForceUpdate();
 		}
 		if (file instanceof TFile && file.extension === 'md' && this.settings.dateSource === 'filename') {
-			if (!isExcludedWeeklyNote(this, file) && this.parseDate(file.name, this.settings.dateFormat).isValid()) {
-				let parsedDayISOString = this.parseDate(file.name, this.settings.dateFormat).format('YYYY-MM-DD');
+			if (!isExcludedWeeklyNote(this, file) && this.parseFileNameDate(file).isValid()) {
+				let parsedDayISOString = this.parseFileNameDate(file).format('YYYY-MM-DD');
 				if (parsedDayISOString in this.OZCALENDARDAYS_STATE) {
 					this.OZCALENDARDAYS_STATE[parsedDayISOString] = [
 						...this.OZCALENDARDAYS_STATE[parsedDayISOString],
@@ -382,18 +398,16 @@ export default class OZCalendarPlugin extends Plugin {
 					}
 				}
 			} else if (this.settings.dateSource === 'filename') {
-				let dateFormatLength = this.settings.dateFormat.length;
-				if (mdFile.name.length >= dateFormatLength) {
-					if (this.parseDate(mdFile.name, this.settings.dateFormat).isValid()) {
-						let parsedDayISOString = this.parseDate(mdFile.name, this.settings.dateFormat).format('YYYY-MM-DD');
-						if (parsedDayISOString in OZCalendarDays) {
-							OZCalendarDays[parsedDayISOString] = [
-								...OZCalendarDays[parsedDayISOString],
-								fileToOZItem({ note: mdFile }),
-							];
-						} else {
-							OZCalendarDays[parsedDayISOString] = [fileToOZItem({ note: mdFile })];
-						}
+				let parsedDate = this.parseFileNameDate(mdFile);
+				if (parsedDate.isValid()) {
+					let parsedDayISOString = parsedDate.format('YYYY-MM-DD');
+					if (parsedDayISOString in OZCalendarDays) {
+						OZCalendarDays[parsedDayISOString] = [
+							...OZCalendarDays[parsedDayISOString],
+							fileToOZItem({ note: mdFile }),
+						];
+					} else {
+						OZCalendarDays[parsedDayISOString] = [fileToOZItem({ note: mdFile })];
 					}
 				}
 			}
