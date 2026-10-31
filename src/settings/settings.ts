@@ -26,6 +26,7 @@ export interface OZCalendarPluginSettings {
 	newNoteCancelButtonReverse: boolean;
 	fileNameOverflowBehaviour: OverflowBehaviour;
 	showWeekNumbers: boolean;
+	useObsidianLanguage: boolean;
 }
 
 export const DEFAULT_SETTINGS: OZCalendarPluginSettings = {
@@ -45,6 +46,7 @@ export const DEFAULT_SETTINGS: OZCalendarPluginSettings = {
 	newNoteCancelButtonReverse: false,
 	fileNameOverflowBehaviour: 'hide',
 	showWeekNumbers: false,
+	useObsidianLanguage: true,
 };
 
 export class OZCalendarPluginSettingsTab extends PluginSettingTab {
@@ -123,6 +125,22 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 				toggle.setValue(this.plugin.settings.showWeekNumbers).onChange((newValue) => {
 					this.plugin.settings.showWeekNumbers = newValue;
 					this.plugin.saveSettings();
+					this.plugin.calendarForceUpdate();
+				});
+			});
+
+		new Setting(containerEl)
+			.setName('Use Obsidian Language for Dates')
+			.setDesc(
+				`Show month and weekday names in the language set in Obsidian (Settings → General → Language).
+                This applies to the calendar view, new note titles and the dates read from your notes. If your
+                date format contains month or weekday names (e.g. MMMM, ddd), notes using English names won't be recognised anymore.`
+			)
+			.addToggle((toggle) => {
+				toggle.setValue(this.plugin.settings.useObsidianLanguage).onChange((newValue) => {
+					this.plugin.settings.useObsidianLanguage = newValue;
+					this.plugin.saveSettings();
+					this.plugin.OZCALENDARDAYS_STATE = this.plugin.getNotesWithDates();
 					this.plugin.calendarForceUpdate();
 				});
 			});

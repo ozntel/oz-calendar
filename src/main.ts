@@ -1,4 +1,4 @@
-import { CachedMetadata, Menu, Plugin, TAbstractFile, TFile, addIcon } from 'obsidian';
+import { CachedMetadata, Menu, Plugin, TAbstractFile, TFile, addIcon, moment } from 'obsidian';
 import { OZCalendarView, VIEW_TYPE } from 'view';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
@@ -6,6 +6,9 @@ import { DayChangeCommandAction, OZCalendarDaysMap, fileToOZItem } from 'types';
 import { OZCAL_ICON } from './util/icons';
 import { OZCalendarPluginSettings, DEFAULT_SETTINGS, OZCalendarPluginSettingsTab } from './settings/settings';
 import { CreateNoteModal } from 'modal';
+
+// Obsidian's bundled moment follows the language set in Obsidian
+const obsidianMoment = moment as unknown as typeof import('moment');
 
 export default class OZCalendarPlugin extends Plugin {
 	settings: OZCalendarPluginSettings;
@@ -184,7 +187,7 @@ export default class OZCalendarPlugin extends Plugin {
 			for (let k of Object.keys(cache.frontmatter)) {
 				if (k === this.settings.yamlKey) {
 					let fmValue = String(fm[k]);
-					let parsedDayISOString = dayjs(fmValue, this.settings.dateFormat).format('YYYY-MM-DD');
+					let parsedDayISOString = this.parseDate(fmValue, this.settings.dateFormat).format('YYYY-MM-DD');
 					this.addFilePathToState(parsedDayISOString, file);
 					changeFlag = true;
 				}
@@ -196,6 +199,25 @@ export default class OZCalendarPlugin extends Plugin {
 	/**
 	 * Use this function to force update the calendar and file list view
 	 */
+	/**
+	 * Parses a date string with the given format. When "Use Obsidian Language for Dates" is enabled,
+	 * month and weekday names are matched in the language set in Obsidian.
+	 */
+	parseDate = (input: string, format: string): dayjs.Dayjs => {
+		if (!this.settings.useObsidianLanguage) return dayjs(input, format);
+		const parsed = obsidianMoment(input, format);
+		return parsed.isValid() ? dayjs(parsed.toDate()) : dayjs('invalid');
+	};
+
+	/**
+	 * Formats a date with the given format. When "Use Obsidian Language for Dates" is enabled,
+	 * month and weekday names are written in the language set in Obsidian.
+	 */
+	formatDate = (date: Date, format: string): string => {
+		if (!this.settings.useObsidianLanguage) return dayjs(date).format(format);
+		return obsidianMoment(date).format(format);
+	};
+
 	calendarForceUpdate = () => {
 		window.dispatchEvent(
 			new CustomEvent(this.EVENT_TYPES.forceUpdate, {
@@ -214,7 +236,7 @@ export default class OZCalendarPlugin extends Plugin {
 				for (let k of Object.keys(cache.frontmatter)) {
 					if (k === this.settings.yamlKey) {
 						let fmValue = String(fm[k]);
-						let parsedDayISOString = dayjs(fmValue, this.settings.dateFormat).format('YYYY-MM-DD');
+						let parsedDayISOString = this.parseDate(fmValue, this.settings.dateFormat).format('YYYY-MM-DD');
 						// If date doesn't exist, create a new one
 						if (!(parsedDayISOString in this.OZCALENDARDAYS_STATE)) {
 							this.addFilePathToState(parsedDayISOString, file);
@@ -255,8 +277,8 @@ export default class OZCalendarPlugin extends Plugin {
 		}
 
 		// Make sure that you scan the new file name for filename source
-		if (this.settings.dateSource === 'filename' && dayjs(file.name, this.settings.dateFormat).isValid()) {
-			let parsedDayISOString = dayjs(file.name, this.settings.dateFormat).format('YYYY-MM-DD');
+		if (this.settings.dateSource === 'filename' && this.parseDate(file.name, this.settings.dateFormat).isValid()) {
+			let parsedDayISOString = this.parseDate(file.name, this.settings.dateFormat).format('YYYY-MM-DD');
 			if (parsedDayISOString in this.OZCALENDARDAYS_STATE) {
 				this.OZCALENDARDAYS_STATE[parsedDayISOString] = [
 					...this.OZCALENDARDAYS_STATE[parsedDayISOString],
@@ -279,8 +301,8 @@ export default class OZCalendarPlugin extends Plugin {
 
 	handleCreate = (file: TAbstractFile) => {
 		if (file instanceof TFile && file.extension === 'md' && this.settings.dateSource === 'filename') {
-			if (dayjs(file.name, this.settings.dateFormat).isValid()) {
-				let parsedDayISOString = dayjs(file.name, this.settings.dateFormat).format('YYYY-MM-DD');
+			if (this.parseDate(file.name, this.settings.dateFormat).isValid()) {
+				let parsedDayISOString = this.parseDate(file.name, this.settings.dateFormat).format('YYYY-MM-DD');
 				if (parsedDayISOString in this.OZCALENDARDAYS_STATE) {
 					this.OZCALENDARDAYS_STATE[parsedDayISOString] = [
 						...this.OZCALENDARDAYS_STATE[parsedDayISOString],
@@ -332,7 +354,7 @@ export default class OZCalendarPlugin extends Plugin {
 						if (k === this.settings.yamlKey) {
 							let fmValue = String(fm[k]);
 							// Parse the date with provided date format
-							let parsedDayJsDate = dayjs(fmValue, this.settings.dateFormat);
+							let parsedDayJsDate = this.parseDate(fmValue, this.settings.dateFormat);
 							// Take only YYYY-MM-DD part fromt the date as String
 							let parsedDayISOString = parsedDayJsDate.format('YYYY-MM-DD');
 							// Check if it already exists
@@ -350,8 +372,8 @@ export default class OZCalendarPlugin extends Plugin {
 			} else if (this.settings.dateSource === 'filename') {
 				let dateFormatLength = this.settings.dateFormat.length;
 				if (mdFile.name.length >= dateFormatLength) {
-					if (dayjs(mdFile.name, this.settings.dateFormat).isValid()) {
-						let parsedDayISOString = dayjs(mdFile.name, this.settings.dateFormat).format('YYYY-MM-DD');
+					if (this.parseDate(mdFile.name, this.settings.dateFormat).isValid()) {
+						let parsedDayISOString = this.parseDate(mdFile.name, this.settings.dateFormat).format('YYYY-MM-DD');
 						if (parsedDayISOString in OZCalendarDays) {
 							OZCalendarDays[parsedDayISOString] = [
 								...OZCalendarDays[parsedDayISOString],
@@ -372,7 +394,7 @@ export default class OZCalendarPlugin extends Plugin {
 		if (abbrItem) {
 			let destDate = abbrItem.getAttr('aria-label');
 			if (destDate && destDate.length > 0) {
-				let dayjsDate = dayjs(destDate, 'MMMM D, YYYY');
+				let dayjsDate = this.parseDate(destDate, 'MMMM D, YYYY');
 				let menu = new Menu();
 				menu.addItem((menuItem) => {
 					menuItem

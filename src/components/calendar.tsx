@@ -7,6 +7,7 @@ import dayjs from 'dayjs';
 import useForceUpdate from 'hooks/forceUpdate';
 import { DayChangeCommandAction } from 'types';
 import { CreateNoteModal } from 'modal';
+import { moment } from 'obsidian';
 
 export default function MyCalendar(params: { plugin: OZCalendarPlugin }) {
 	const { plugin } = params;
@@ -123,7 +124,10 @@ export default function MyCalendar(params: { plugin: OZCalendarPlugin }) {
 						setActiveStartDate(dayjs(activeStartDate).add(-12, 'month').toDate());
 					}
 				}}
-				formatMonthYear={(locale, date) => dayjs(date).format('MMM YYYY')}
+				locale={plugin.settings.useObsidianLanguage ? moment.locale() : undefined}
+				formatDay={(locale, date) => String(date.getDate())}
+				formatMonthYear={(locale, date) => plugin.formatDate(date, 'MMM YYYY')}
+				formatLongDate={(locale, date) => plugin.formatDate(date, 'MMMM D, YYYY')}
 			/>
 			<>
 				<div id="oz-calendar-divider"></div>

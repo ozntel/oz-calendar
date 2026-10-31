@@ -28,7 +28,7 @@ export class CreateNoteModal extends Modal {
 
 		let defFileNamePref = this.plugin.settings.defaultFileNamePrefix;
 		if (defFileNamePref !== '') {
-			fileNameInputEl.value = dayjs(this.destinationDate).format(defFileNamePref) + ' ';
+			fileNameInputEl.value = this.plugin.formatDate(this.destinationDate, defFileNamePref) + ' ';
 		}
 
 		fileNameInputEl.focus();
@@ -82,7 +82,7 @@ export class CreateNoteModal extends Modal {
 			// Default Text Preparation for File with YAML and Date
 			let defaultNewFileText = stripIndents`
 			---
-			${this.plugin.settings.yamlKey}: ${dayjs(this.destinationDate).format(this.plugin.settings.dateFormat)}
+			${this.plugin.settings.yamlKey}: ${this.plugin.formatDate(this.destinationDate, this.plugin.settings.dateFormat)}
 			---
 			`;
 
