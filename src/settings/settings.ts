@@ -268,7 +268,7 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 			.setName('Default Folder Location')
 			.setDesc('Select the default folder, under which the new files should be saved when use plugin + icon')
 			.addSearch((cb) => {
-				new FolderSuggest(cb.inputEl);
+				new FolderSuggest(this.app, cb.inputEl);
 				cb.setPlaceholder('Example: folder1/folder2')
 					.setValue(this.plugin.settings.defaultFolder)
 					.onChange((new_folder) => {

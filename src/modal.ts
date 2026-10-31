@@ -38,7 +38,7 @@ export class CreateNoteModal extends Modal {
 		if (this.plugin.settings.showDestinationFolderDuringCreate) {
 			contentEl.createEl('p', { text: 'Destination Folder:' });
 			folderInputEl = contentEl.createEl('input', { cls: 'oz-calendar-modal-inputel' });
-			new FolderSuggest(folderInputEl);
+			new FolderSuggest(this.app, folderInputEl);
 			folderInputEl.value = this.plugin.settings.defaultFolder;
 		}
 
