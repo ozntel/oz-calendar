@@ -1,4 +1,4 @@
-import { AbstractInputSuggest, App, TAbstractFile, TFolder } from 'obsidian';
+import { AbstractInputSuggest, App, TAbstractFile, TFile, TFolder } from 'obsidian';
 
 export class FolderSuggest extends AbstractInputSuggest<TFolder> {
 	private inputEl: HTMLInputElement;
@@ -27,6 +27,33 @@ export class FolderSuggest extends AbstractInputSuggest<TFolder> {
 	}
 
 	selectSuggestion(file: TFolder): void {
+		this.setValue(file.path);
+		// Trigger input so that Setting onChange handlers pick up the new value
+		this.inputEl.trigger('input');
+		this.close();
+	}
+}
+
+export class FileSuggest extends AbstractInputSuggest<TFile> {
+	private inputEl: HTMLInputElement;
+
+	constructor(app: App, inputEl: HTMLInputElement) {
+		super(app, inputEl);
+		this.inputEl = inputEl;
+	}
+
+	getSuggestions(inputStr: string): TFile[] {
+		const lowerCaseInputStr = inputStr.toLowerCase();
+		return this.app.vault
+			.getMarkdownFiles()
+			.filter((file) => file.path.toLowerCase().contains(lowerCaseInputStr));
+	}
+
+	renderSuggestion(file: TFile, el: HTMLElement): void {
+		el.setText(file.path);
+	}
+
+	selectSuggestion(file: TFile): void {
 		this.setValue(file.path);
 		// Trigger input so that Setting onChange handlers pick up the new value
 		this.inputEl.trigger('input');

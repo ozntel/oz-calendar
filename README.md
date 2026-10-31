@@ -57,6 +57,18 @@ You can define this in the plugin settings:
 -   You can right-click any date in the calendar view to create a note for a certain date
 -   The plus icon is defaulted to create a note for today
 
+## Weekly Notes
+
+Enable **Weekly Notes** and **Show Week Numbers** in the plugin settings to use the week numbers of the calendar:
+
+-   Click on a week number to open the weekly note of that week. If it doesn't exist yet, it will be created. Use **Cmd/Ctrl + Click** to open it in a new tab.
+-   Week numbers with an existing weekly note are shown bold and underlined.
+-   **Weekly Note Format**: leave it empty to use the format matching the Calendar Type (ISO 8601: `GGGG-[W]WW` → `2026-W44`, US: `gggg-[W]ww`).
+-   **Weekly Notes Folder**: leave it empty to use the default folder of the new notes. If you set a separate folder, the weekly notes are not shown as dots on the days (you can change this with **Hide Weekly Notes from Days**).
+-   **Weekly Note Template**: optional template file. `{{title}}` is replaced with the note name and `{{date}}` with the first day of the week.
+
+Commands: **Open This Week's Note**, **Open Previous Week's Note** and **Open Next Week's Note**.
+
 ## Plugin Commands
 
 ### Day Navigation

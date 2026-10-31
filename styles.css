@@ -294,6 +294,24 @@ settings:
 	font-size: var(--nav-item-size);
 }
 
+/* Week numbers are buttons when weekly notes are enabled */
+.oz-calendar-plugin-view .react-calendar__month-view__weekNumbers button.react-calendar__tile {
+	color: inherit;
+	font-size: inherit;
+	background-color: transparent;
+	box-shadow: none;
+}
+
+.oz-calendar-plugin-view .react-calendar__month-view__weekNumbers button.react-calendar__tile:hover {
+	background: var(--background-secondary-alt);
+}
+
+.oz-calendar-plugin-view .react-calendar__month-view__weekNumbers .oz-calendar-week-has-note span {
+	font-weight: bold;
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+
 /*  END - Fixed Calendar */
 
 .oz-calendar-modal-inputel {

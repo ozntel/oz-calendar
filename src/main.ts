@@ -6,6 +6,7 @@ import { DayChangeCommandAction, OZCalendarDaysMap, fileToOZItem } from 'types';
 import { OZCAL_ICON } from './util/icons';
 import { OZCalendarPluginSettings, DEFAULT_SETTINGS, OZCalendarPluginSettingsTab } from './settings/settings';
 import { CreateNoteModal } from 'modal';
+import { isExcludedWeeklyNote, openWeeklyNote } from './util/weeklyNotes';
 
 // Obsidian's bundled moment follows the language set in Obsidian
 const obsidianMoment = moment as unknown as typeof import('moment');
@@ -110,6 +111,21 @@ export default class OZCalendarPlugin extends Plugin {
 				);
 			},
 		});
+
+		const addWeeklyNoteCommand = (id: string, name: string, weekOffset: number) => {
+			this.addCommand({
+				id: id,
+				name: name,
+				checkCallback: (checking: boolean) => {
+					if (!this.settings.weeklyNotesEnabled) return false;
+					if (!checking) openWeeklyNote(this, dayjs().add(weekOffset, 'week').toDate());
+					return true;
+				},
+			});
+		};
+		addWeeklyNoteCommand('oz-calendar-open-weekly-note', "Open This Week's Note", 0);
+		addWeeklyNoteCommand('oz-calendar-open-previous-weekly-note', "Open Previous Week's Note", -1);
+		addWeeklyNoteCommand('oz-calendar-open-next-weekly-note', "Open Next Week's Note", 1);
 
 		this.addCommand({
 			id: 'oz-calendar-open-leaf',
@@ -223,7 +239,7 @@ export default class OZCalendarPlugin extends Plugin {
 	handleCacheChange = (file: TFile, data: string, cache: CachedMetadata) => {
 		if (this.settings.dateSource === 'yaml') {
 			this.removeFilePathFromState(file.path);
-			if (cache && cache.frontmatter) {
+			if (cache && cache.frontmatter && !isExcludedWeeklyNote(this, file)) {
 				let fm = cache.frontmatter;
 				for (let k of Object.keys(cache.frontmatter)) {
 					if (k === this.settings.yamlKey) {
@@ -269,7 +285,11 @@ export default class OZCalendarPlugin extends Plugin {
 		}
 
 		// Make sure that you scan the new file name for filename source
-		if (this.settings.dateSource === 'filename' && this.parseDate(file.name, this.settings.dateFormat).isValid()) {
+		if (
+			this.settings.dateSource === 'filename' &&
+			!isExcludedWeeklyNote(this, file) &&
+			this.parseDate(file.name, this.settings.dateFormat).isValid()
+		) {
 			let parsedDayISOString = this.parseDate(file.name, this.settings.dateFormat).format('YYYY-MM-DD');
 			if (parsedDayISOString in this.OZCALENDARDAYS_STATE) {
 				this.OZCALENDARDAYS_STATE[parsedDayISOString] = [
@@ -282,18 +302,24 @@ export default class OZCalendarPlugin extends Plugin {
 			changeFlag = true;
 		}
 
+		// Weekly notes can be created, renamed or deleted, which changes the highlighted week numbers
+		if (this.settings.weeklyNotesEnabled) changeFlag = true;
+
 		// If change happened force update the component
 		if (changeFlag) this.calendarForceUpdate();
 	};
 
 	handleDelete = (file: TAbstractFile) => {
 		let changeFlag = this.removeFilePathFromState(file.path);
-		if (changeFlag) this.calendarForceUpdate();
+		if (changeFlag || this.settings.weeklyNotesEnabled) this.calendarForceUpdate();
 	};
 
 	handleCreate = (file: TAbstractFile) => {
+		if (file instanceof TFile && file.extension === 'md' && this.settings.weeklyNotesEnabled) {
+			this.calendarForceUpdate();
+		}
 		if (file instanceof TFile && file.extension === 'md' && this.settings.dateSource === 'filename') {
-			if (this.parseDate(file.name, this.settings.dateFormat).isValid()) {
+			if (!isExcludedWeeklyNote(this, file) && this.parseDate(file.name, this.settings.dateFormat).isValid()) {
 				let parsedDayISOString = this.parseDate(file.name, this.settings.dateFormat).format('YYYY-MM-DD');
 				if (parsedDayISOString in this.OZCALENDARDAYS_STATE) {
 					this.OZCALENDARDAYS_STATE[parsedDayISOString] = [
@@ -328,6 +354,7 @@ export default class OZCalendarPlugin extends Plugin {
 		let mdFiles = this.app.vault.getMarkdownFiles();
 		let OZCalendarDays: OZCalendarDaysMap = {};
 		for (let mdFile of mdFiles) {
+			if (isExcludedWeeklyNote(this, mdFile)) continue;
 			if (this.settings.dateSource === 'yaml') {
 				// Get the file Cache
 				let fileCache = this.app.metadataCache.getFileCache(mdFile);

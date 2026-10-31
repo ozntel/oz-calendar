@@ -1,6 +1,7 @@
 import OZCalendarPlugin from 'main';
 import { PluginSettingTab, App, Setting, debounce } from 'obsidian';
-import { FolderSuggest } from 'settings/suggestor';
+import { FileSuggest, FolderSuggest } from 'settings/suggestor';
+import { getDefaultWeeklyNoteFormat } from '../util/weeklyNotes';
 
 export type OpenFileBehaviourType = 'new-tab' | 'new-tab-group' | 'current-tab' | 'obsidian-default';
 export type SortingOption = 'name' | 'name-rev';
@@ -27,6 +28,11 @@ export interface OZCalendarPluginSettings {
 	fileNameOverflowBehaviour: OverflowBehaviour;
 	showWeekNumbers: boolean;
 	useObsidianLanguage: boolean;
+	weeklyNotesEnabled: boolean;
+	weeklyNoteFormat: string;
+	weeklyNotesFolder: string;
+	weeklyNoteTemplate: string;
+	excludeWeeklyNotesFromDays: boolean;
 }
 
 export const DEFAULT_SETTINGS: OZCalendarPluginSettings = {
@@ -47,6 +53,11 @@ export const DEFAULT_SETTINGS: OZCalendarPluginSettings = {
 	fileNameOverflowBehaviour: 'hide',
 	showWeekNumbers: false,
 	useObsidianLanguage: true,
+	weeklyNotesEnabled: false,
+	weeklyNoteFormat: '',
+	weeklyNotesFolder: '',
+	weeklyNoteTemplate: '',
+	excludeWeeklyNotesFromDays: true,
 };
 
 export class OZCalendarPluginSettingsTab extends PluginSettingTab {
@@ -336,6 +347,86 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 				toggle.setValue(this.plugin.settings.newNoteCancelButtonReverse).onChange((newValue) => {
 					this.plugin.settings.newNoteCancelButtonReverse = newValue;
 					this.plugin.saveSettings();
+				});
+			});
+
+		containerEl.createEl('h2', { text: 'Weekly Notes Settings' });
+
+		new Setting(containerEl)
+			.setName('Enable Weekly Notes')
+			.setDesc(
+				`Click on a week number in the calendar to open the weekly note of that week, or to create it if it
+                doesn't exist yet. Week numbers with an existing weekly note are highlighted. Make sure that
+                "Show Week Numbers" is enabled.`
+			)
+			.addToggle((toggle) => {
+				toggle.setValue(this.plugin.settings.weeklyNotesEnabled).onChange((newValue) => {
+					this.plugin.settings.weeklyNotesEnabled = newValue;
+					this.plugin.saveSettings();
+					this.plugin.OZCALENDARDAYS_STATE = this.plugin.getNotesWithDates();
+					this.plugin.calendarForceUpdate();
+				});
+			});
+
+		new Setting(containerEl)
+			.setName('Weekly Note Format')
+			.setDesc(
+				`File name format of the weekly notes. Leave empty to use the format matching the Calendar Type
+                (ISO 8601: GGGG-[W]WW, US: gggg-[W]ww).`
+			)
+			.addText((text) => {
+				text.setPlaceholder(getDefaultWeeklyNoteFormat(this.plugin))
+					.setValue(this.plugin.settings.weeklyNoteFormat)
+					.onChange((newValue) => {
+						this.plugin.settings.weeklyNoteFormat = newValue.trim();
+						this.plugin.saveSettings();
+						this.plugin.calendarForceUpdate();
+					});
+			});
+
+		new Setting(containerEl)
+			.setName('Weekly Notes Folder')
+			.setDesc('Folder of the weekly notes. Leave empty to use the Default Folder Location of the new notes.')
+			.addSearch((cb) => {
+				new FolderSuggest(this.app, cb.inputEl);
+				cb.setPlaceholder(this.plugin.settings.defaultFolder)
+					.setValue(this.plugin.settings.weeklyNotesFolder)
+					.onChange((newFolder) => {
+						this.plugin.settings.weeklyNotesFolder = newFolder;
+						this.plugin.saveSettings();
+						this.plugin.OZCALENDARDAYS_STATE = this.plugin.getNotesWithDates();
+						this.plugin.calendarForceUpdate();
+					});
+			});
+
+		new Setting(containerEl)
+			.setName('Weekly Note Template')
+			.setDesc(
+				`Optional template file for the new weekly notes. {{title}} is replaced with the note name and
+                {{date}} with the first day of the week (YYYY-MM-DD).`
+			)
+			.addSearch((cb) => {
+				new FileSuggest(this.app, cb.inputEl);
+				cb.setPlaceholder('Example: Templates/Weekly.md')
+					.setValue(this.plugin.settings.weeklyNoteTemplate)
+					.onChange((newFile) => {
+						this.plugin.settings.weeklyNoteTemplate = newFile;
+						this.plugin.saveSettings();
+					});
+			});
+
+		new Setting(containerEl)
+			.setName('Hide Weekly Notes from Days')
+			.setDesc(
+				`Don't show the notes in the Weekly Notes Folder as dots on the days of the calendar.
+                Only applies if a separate Weekly Notes Folder is set.`
+			)
+			.addToggle((toggle) => {
+				toggle.setValue(this.plugin.settings.excludeWeeklyNotesFromDays).onChange((newValue) => {
+					this.plugin.settings.excludeWeeklyNotesFromDays = newValue;
+					this.plugin.saveSettings();
+					this.plugin.OZCALENDARDAYS_STATE = this.plugin.getNotesWithDates();
+					this.plugin.calendarForceUpdate();
 				});
 			});
 

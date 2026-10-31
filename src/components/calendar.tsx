@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Calendar, { CalendarTileProperties } from 'react-calendar';
 import { RxDotFilled } from 'react-icons/rx';
 import OZCalendarPlugin from '../main';
@@ -7,7 +7,8 @@ import dayjs from 'dayjs';
 import useForceUpdate from 'hooks/forceUpdate';
 import { DayChangeCommandAction } from 'types';
 import { CreateNoteModal } from 'modal';
-import { moment } from 'obsidian';
+import { Keymap, moment } from 'obsidian';
+import { getStartOfWeek, getWeeklyNote, getWeeklyNoteName, openWeeklyNote } from '../util/weeklyNotes';
 
 export default function MyCalendar(params: { plugin: OZCalendarPlugin }) {
 	const { plugin } = params;
@@ -99,14 +100,47 @@ export default function MyCalendar(params: { plugin: OZCalendarPlugin }) {
 
 	const fixedCalendarClass = plugin.settings.fixedCalendar ? 'fixed' : '';
 
+	// Highlight the week numbers that have a weekly note. react-calendar doesn't support custom classes for
+	// week numbers, so the rendered week number tiles are updated after each render
+	const calendarRef = useRef<HTMLDivElement>(null);
+	useEffect(() => {
+		const weekNumberEls = calendarRef.current?.querySelectorAll<HTMLElement>(
+			'.react-calendar__month-view__weekNumbers .react-calendar__tile'
+		);
+		if (!weekNumberEls) return;
+		weekNumberEls.forEach((weekNumberEl, index) => {
+			if (!plugin.settings.weeklyNotesEnabled) {
+				weekNumberEl.removeClass('oz-calendar-week-has-note');
+				weekNumberEl.removeAttribute('aria-label');
+				return;
+			}
+			// Same week calculation as react-calendar: the week of the nth week day of the month
+			const weekDate = getStartOfWeek(
+				plugin,
+				new Date(activeStartDate.getFullYear(), activeStartDate.getMonth(), 1 + index * 7)
+			);
+			const weeklyNote = getWeeklyNote(plugin, weekDate);
+			weekNumberEl.toggleClass('oz-calendar-week-has-note', weeklyNote !== null);
+			weekNumberEl.setAttribute(
+				'aria-label',
+				(weeklyNote ? 'Open weekly note ' : 'Create weekly note ') + getWeeklyNoteName(plugin, weekDate)
+			);
+		});
+	});
+
 	return (
-		<div className={'oz-calendar-plugin-view ' + fixedCalendarClass}>
+		<div className={'oz-calendar-plugin-view ' + fixedCalendarClass} ref={calendarRef}>
 			<Calendar
 				onChange={setSelectedDay}
 				value={selectedDay}
 				maxDetail="month"
 				minDetail="month"
 				showWeekNumbers={plugin.settings.showWeekNumbers}
+				onClickWeekNumber={
+					plugin.settings.weeklyNotesEnabled
+						? (weekNumber, date, event) => openWeeklyNote(plugin, date, !!Keymap.isModEvent(event.nativeEvent))
+						: undefined
+				}
 				view="month"
 				tileContent={customTileContent}
 				tileClassName={customTileClass}
