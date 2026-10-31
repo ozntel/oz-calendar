@@ -1,5 +1,5 @@
 import OZCalendarPlugin from 'main';
-import { PluginSettingTab, App, Setting } from 'obsidian';
+import { PluginSettingTab, App, Setting, debounce } from 'obsidian';
 import { FolderSuggest } from 'settings/suggestor';
 
 export type OpenFileBehaviourType = 'new-tab' | 'new-tab-group' | 'current-tab' | 'obsidian-default';
@@ -34,7 +34,7 @@ export const DEFAULT_SETTINGS: OZCalendarPluginSettings = {
 	calendarType: 'ISO 8601',
 	dateSource: 'yaml',
 	yamlKey: 'created',
-	dateFormat: 'YYYY-MM-DD hh:mm:ss',
+	dateFormat: 'YYYY-MM-DD HH:mm:ss',
 	defaultFolder: '/',
 	defaultFileNamePrefix: 'YYYY-MM-DD',
 	fixedCalendar: true,
@@ -178,13 +178,15 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 
 		containerEl.createEl('h2', { text: 'YAML, File Name and Date Format Settings' });
 
-		containerEl.createEl('p', {
-			text: `
-            When you make a change under this section for YAML Key and Date Format, make sure that
-            you also use "Reload Plugin" button so that the changes can be activated.
-            `,
-			cls: 'setting-item-description',
-		});
+		// Rescan the vault once the user stops typing in YAML Key or Date Format
+		const rescanNotes = debounce(
+			() => {
+				this.plugin.OZCALENDARDAYS_STATE = this.plugin.getNotesWithDates();
+				this.plugin.calendarForceUpdate();
+			},
+			1000,
+			true
+		);
 
 		new Setting(containerEl)
 			.setName('Date Source')
@@ -203,14 +205,7 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 						this.plugin.OZCALENDARDAYS_STATE = this.plugin.getNotesWithDates();
 						this.plugin.calendarForceUpdate();
 						// If YAML selected, show the YAML key below, or hide if changed back to filename
-						let yamlKeySettingEl = document.querySelector('.oz-calendar-setting-yaml-key-value');
-						if (yamlKeySettingEl) {
-							if (newValue === 'filename') {
-								yamlKeySettingEl.addClass('oz-calendar-custom-hidden');
-							} else {
-								yamlKeySettingEl.removeClass('oz-calendar-custom-hidden');
-							}
-						}
+						yamlKeySetting.settingEl.toggleClass('oz-calendar-custom-hidden', newValue === 'filename');
 					});
 			});
 
@@ -222,6 +217,7 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 				text.setValue(this.plugin.settings.yamlKey).onChange((newValue) => {
 					this.plugin.settings.yamlKey = newValue;
 					this.plugin.saveSettings();
+					rescanNotes();
 				});
 			});
 
@@ -232,23 +228,13 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 			.setDesc(
 				`Set the Date format you are using within the YAML key or File Name provided above. 
                 If you are using File Name, make sure that you dont have any special characters since Obsidian doesnt
-                support special characters in the file name like colon. Reload the plugin using the following button
-                in case you change this value`
+                support special characters in the file name like colon.`
 			)
 			.addText((text) => {
 				text.setValue(this.plugin.settings.dateFormat).onChange((newValue) => {
 					this.plugin.settings.dateFormat = newValue;
 					this.plugin.saveSettings();
-				});
-			});
-
-		new Setting(containerEl)
-			.setName('Reload the plugin')
-			.setDesc('Make sure that you reload the plugin if you changed YAML key or Date Format')
-			.addButton((button) => {
-				button.setButtonText('Reload Plugin');
-				button.onClick(() => {
-					this.plugin.reloadPlugin();
+					rescanNotes();
 				});
 			});
 

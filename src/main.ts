@@ -57,9 +57,6 @@ export default class OZCalendarPlugin extends Plugin {
 		this.registerEvent(this.app.vault.on('delete', this.handleDelete));
 		this.registerEvent(this.app.vault.on('create', this.handleCreate));
 
-		// Add Event Handler for Custom Note Creation
-		document.on('contextmenu', this.dayMonthSelectorQuery, this.handleMonthDayContextMenu);
-
 		this.addCommand({
 			id: 'oz-calendar-next-day',
 			name: 'Go to Next Day',
@@ -121,11 +118,6 @@ export default class OZCalendarPlugin extends Plugin {
 				this.openOZCalendarLeaf({ showAfterAttach: true });
 			},
 		});
-	}
-
-	onunload() {
-		// Remove Event Handler for Custom Note Creation
-		document.off('contextmenu', this.dayMonthSelectorQuery, this.handleMonthDayContextMenu);
 	}
 
 	async loadSettings() {
@@ -332,13 +324,6 @@ export default class OZCalendarPlugin extends Plugin {
 		}
 	};
 
-	reloadPlugin = () => {
-		// @ts-ignore
-		this.app.plugins.disablePlugin('oz-calendar');
-		// @ts-ignore
-		this.app.plugins.enablePlugin('oz-calendar');
-	};
-
 	getNotesWithDates = (): OZCalendarDaysMap => {
 		let mdFiles = this.app.vault.getMarkdownFiles();
 		let OZCalendarDays: OZCalendarDaysMap = {};
@@ -405,7 +390,7 @@ export default class OZCalendarPlugin extends Plugin {
 							modal.open();
 						});
 				});
-				menu.showAtPosition({ x: ev.pageX, y: ev.pageY });
+				menu.showAtMouseEvent(ev);
 			}
 		}
 	};

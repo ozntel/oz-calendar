@@ -35,11 +35,16 @@ export class OZCalendarView extends ItemView {
 
 	destroy() {
 		if (this.root) this.root.unmount();
+		// Remove Event Handler for Custom Note Creation
+		this.contentEl.off('contextmenu', this.plugin.dayMonthSelectorQuery, this.plugin.handleMonthDayContextMenu);
 	}
 
 	async onOpen() {
 		this.destroy();
 		this.root = createRoot(this.contentEl)
 		this.root.render(<MyCalendar plugin={this.plugin} />);
+		// Add Event Handler for Custom Note Creation. Attached to the view instead of the main document
+		// so that it also works when the view is in a pop-out window
+		this.contentEl.on('contextmenu', this.plugin.dayMonthSelectorQuery, this.plugin.handleMonthDayContextMenu);
 	}
 }

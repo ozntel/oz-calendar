@@ -8,14 +8,21 @@ If you like the see your notes on a Calendar and easily find them using a certai
 
 ## Configure
 
-> IMPORTANT: Please make sure that you check the date formatting of the library, which is used by this plugin following [Day.js Date Format Link](https://day.js.org/docs/en/display/format).
+> IMPORTANT: Please make sure that you check the date format tokens supported by the plugin following [Moment.js Date Format Link](https://momentjs.com/docs/#/displaying/format/) (e.g. `YYYY-MM-DD`, `D MMMM YYYY`, `HH:mm`).
+
+### Dates in Your Language
+
+By default, month and weekday names (e.g. `MMMM`, `ddd`) follow the language set in Obsidian (**Settings → General → Language**). This applies to the calendar view, new note titles, the YAML date and the dates read from your notes. If you prefer English names regardless of the Obsidian language, disable **Use Obsidian Language for Dates** in the plugin settings.
+
+> If your date format contains month or weekday names and your existing notes use English names, keep **Use Obsidian Language for Dates** disabled, otherwise those notes won't be recognised.
 
 ### 01 YAML Option as Date Source
 
 1. Go to the plugin settings
 2. Define the **YAML** key you want to use as a date field. The default key is **created**
-3. Define the **Date Format** you are using within **YAML**. The default date format is **YYYY-MM-DD hh:mm:ss**
-4. After these changes, use **Reload Plugin** option to activate the changes in the vault.
+3. Define the **Date Format** you are using within **YAML**. The default date format is **YYYY-MM-DD HH:mm:ss**
+
+Changes are applied right away, there is no need to reload the plugin.
 
 For the ones that don't know how to add a YAML key, see the following:
 
@@ -34,7 +41,8 @@ The default date source is the YAML Key ("created") as mentioned above. If you w
 1. Go to the plugin settings
 2. Change Date Source from **YAML** to **File Name** since the plugin has **YAML** key as a default date source
 3. Make sure that you adjust the default date format (**Important**: The default date format has special characters that is not supported for file name like colon that needs to be adjusted for File Name option)
-4. After these changes, use **Reload Plugin** option to activate the changes in the vault.
+
+Changes are applied right away, there is no need to reload the plugin.
 
 > Both YAML and File Name options can include additional characters in the file name. As long as the custom date format defined in the plugin settings is at the beginning of the YAML key or File Name, the plugin will be smart enough to parse only the beginning of the key/filename. For instance, if you have a file name '**2023-03-10 This is the file**' and your date format defined in the plugin settings is **YYYY-MM-DD**, it will be parsed just fine in the calendar.
 
