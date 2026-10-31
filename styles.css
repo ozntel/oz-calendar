@@ -94,6 +94,11 @@ settings:
 	display: flex;
 }
 
+/* Keep the desktop button padding for navigation on tablets */
+.is-tablet .oz-calendar-plugin-view .react-calendar__navigation button {
+	padding: var(--size-4-1) var(--size-4-3);
+}
+
 .oz-calendar-plugin-view .react-calendar__month-view__weekdays {
 	text-align: center;
 	text-transform: uppercase;
@@ -118,7 +123,9 @@ settings:
 	opacity: 0.5;
 }
 
-.oz-calendar-plugin-view .react-calendar__tile {
+/* Higher specificity than Obsidian's ".is-tablet button:not(.clickable-icon)" padding,
+   which otherwise makes the tiles wider than 1/7 and wraps the week into 6 columns */
+.oz-calendar-plugin-view .react-calendar button.react-calendar__tile {
 	max-width: 100%;
 	padding: 10px 6.6667px;
 	background: none;
