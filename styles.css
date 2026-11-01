@@ -259,6 +259,50 @@ settings:
 	font-weight: bold;
 }
 
+/* Days with a daily note, underlined like the week numbers with a weekly note */
+.oz-calendar-day-has-daily-note abbr {
+	text-decoration: underline;
+	text-decoration-color: var(--interactive-accent);
+	text-decoration-thickness: 2px;
+	text-underline-offset: 3px;
+}
+
+/* The selected date in the note list header opens the daily note. Its underline matches the calendar days:
+   solid when the daily note exists, dashed when it can be created */
+.oz-calendar-daily-note-date span {
+	text-decoration-line: underline;
+	text-decoration-thickness: 2px;
+	text-underline-offset: 4px;
+}
+
+.oz-calendar-daily-note-date:hover {
+	opacity: 0.8;
+}
+
+.oz-calendar-daily-note-icon {
+	margin-right: 6px;
+	vertical-align: -2px;
+	font-size: 0.85em;
+}
+
+.oz-calendar-daily-note-exists span {
+	text-decoration-style: solid;
+	text-decoration-color: var(--interactive-accent);
+}
+
+.oz-calendar-daily-note-exists .oz-calendar-daily-note-icon {
+	color: var(--interactive-accent);
+}
+
+.oz-calendar-daily-note-missing span {
+	text-decoration-style: dashed;
+	text-decoration-color: var(--text-faint);
+}
+
+.oz-calendar-daily-note-missing .oz-calendar-daily-note-icon {
+	color: var(--text-faint);
+}
+
 /* START - Fixed Calendar Except Note List - Scroll */
 
 .oz-calendar-plugin-view.fixed {

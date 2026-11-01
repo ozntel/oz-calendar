@@ -7,7 +7,15 @@ import { DayChangeCommandAction, OZCalendarDaysMap, fileToOZItem } from 'types';
 import { OZCAL_ICON } from './util/icons';
 import { OZCalendarPluginSettings, DEFAULT_SETTINGS, OZCalendarPluginSettingsTab } from './settings/settings';
 import { CreateNoteModal } from 'modal';
-import { isExcludedWeeklyNote, openWeeklyNote } from './util/weeklyNotes';
+import {
+	PERIOD_LABELS,
+	PeriodType,
+	getPeriodicNote,
+	isAnyPeriodEnabled,
+	isPeriodEnabled,
+	isExcludedWeeklyNote,
+	openPeriodicNote,
+} from './util/periodicNotes';
 import { findDateCandidates } from './util/utils';
 
 // Obsidian's bundled moment follows the language set in Obsidian
@@ -116,20 +124,24 @@ export default class OZCalendarPlugin extends Plugin {
 			},
 		});
 
-		const addWeeklyNoteCommand = (id: string, name: string, weekOffset: number) => {
+		const addPeriodicNoteCommand = (id: string, name: string, period: PeriodType, offset: number) => {
 			this.addCommand({
 				id: id,
 				name: name,
 				checkCallback: (checking: boolean) => {
-					if (!this.settings.weeklyNotesEnabled) return false;
-					if (!checking) openWeeklyNote(this, dayjs().add(weekOffset, 'week').toDate());
+					if (!isPeriodEnabled(this, period)) return false;
+					const unit = period === 'daily' ? 'day' : 'week';
+					if (!checking) openPeriodicNote(this, period, dayjs().add(offset, unit).toDate());
 					return true;
 				},
 			});
 		};
-		addWeeklyNoteCommand('oz-calendar-open-weekly-note', "Open This Week's Note", 0);
-		addWeeklyNoteCommand('oz-calendar-open-previous-weekly-note', "Open Previous Week's Note", -1);
-		addWeeklyNoteCommand('oz-calendar-open-next-weekly-note', "Open Next Week's Note", 1);
+		addPeriodicNoteCommand('oz-calendar-open-daily-note', "Open Today's Note", 'daily', 0);
+		addPeriodicNoteCommand('oz-calendar-open-previous-daily-note', "Open Yesterday's Note", 'daily', -1);
+		addPeriodicNoteCommand('oz-calendar-open-next-daily-note', "Open Tomorrow's Note", 'daily', 1);
+		addPeriodicNoteCommand('oz-calendar-open-weekly-note', "Open This Week's Note", 'weekly', 0);
+		addPeriodicNoteCommand('oz-calendar-open-previous-weekly-note', "Open Previous Week's Note", 'weekly', -1);
+		addPeriodicNoteCommand('oz-calendar-open-next-weekly-note', "Open Next Week's Note", 'weekly', 1);
 
 		this.addCommand({
 			id: 'oz-calendar-open-leaf',
@@ -141,7 +153,21 @@ export default class OZCalendarPlugin extends Plugin {
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		const data = (await this.loadData()) ?? {};
+		// Before daily notes, "dailyNoteTemplate" was the template of all new notes and weekly notes had their own folder
+		let migrated = false;
+		if ('weeklyNotesFolder' in data) {
+			if (!('periodicNotesFolder' in data)) data.periodicNotesFolder = data.weeklyNotesFolder;
+			delete data.weeklyNotesFolder;
+			migrated = true;
+		}
+		if ('dailyNoteTemplate' in data && !('newNoteTemplate' in data)) {
+			data.newNoteTemplate = data.dailyNoteTemplate;
+			data.dailyNoteTemplate = '';
+			migrated = true;
+		}
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, data);
+		if (migrated) await this.saveSettings();
 	}
 
 	async saveSettings() {
@@ -318,8 +344,8 @@ export default class OZCalendarPlugin extends Plugin {
 			changeFlag = true;
 		}
 
-		// Weekly notes can be created, renamed or deleted, which changes the highlighted week numbers
-		if (this.settings.weeklyNotesEnabled) changeFlag = true;
+		// Periodic notes can be created, renamed or deleted, which changes the highlighted days and week numbers
+		if (isAnyPeriodEnabled(this)) changeFlag = true;
 
 		// If change happened force update the component
 		if (changeFlag) this.calendarForceUpdate();
@@ -327,11 +353,11 @@ export default class OZCalendarPlugin extends Plugin {
 
 	handleDelete = (file: TAbstractFile) => {
 		let changeFlag = this.removeFilePathFromState(file.path);
-		if (changeFlag || this.settings.weeklyNotesEnabled) this.calendarForceUpdate();
+		if (changeFlag || isAnyPeriodEnabled(this)) this.calendarForceUpdate();
 	};
 
 	handleCreate = (file: TAbstractFile) => {
-		if (file instanceof TFile && file.extension === 'md' && this.settings.weeklyNotesEnabled) {
+		if (file instanceof TFile && file.extension === 'md' && isAnyPeriodEnabled(this)) {
 			this.calendarForceUpdate();
 		}
 		if (file instanceof TFile && file.extension === 'md' && this.settings.dateSource === 'filename') {
@@ -431,6 +457,15 @@ export default class OZCalendarPlugin extends Plugin {
 							modal.open();
 						});
 				});
+				if (this.settings.dailyNotesEnabled) {
+					const dailyNoteExists = getPeriodicNote(this, 'daily', dayjsDate.toDate()) !== null;
+					menu.addItem((menuItem) => {
+						menuItem
+							.setTitle((dailyNoteExists ? 'Open ' : 'Create ') + PERIOD_LABELS.daily)
+							.setIcon('calendar-days')
+							.onClick(() => openPeriodicNote(this, 'daily', dayjsDate.toDate()));
+					});
+				}
 				menu.showAtMouseEvent(ev);
 			}
 		}

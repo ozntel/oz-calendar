@@ -8,7 +8,7 @@ import useForceUpdate from 'hooks/forceUpdate';
 import { DayChangeCommandAction } from 'types';
 import { CreateNoteModal } from 'modal';
 import { Keymap, moment } from 'obsidian';
-import { getStartOfWeek, getWeeklyNote, getWeeklyNoteName, openWeeklyNote } from '../util/weeklyNotes';
+import { getPeriodicNote, getPeriodicNoteName, getStartOfWeek, openPeriodicNote } from '../util/periodicNotes';
 
 export default function MyCalendar(params: { plugin: OZCalendarPlugin }) {
 	const { plugin } = params;
@@ -89,13 +89,20 @@ export default function MyCalendar(params: { plugin: OZCalendarPlugin }) {
 	};
 
 	const customTileClass = ({ activeStartDate, date, view }: CalendarTileProperties) => {
+		const classes: string[] = [];
 		// Assign a custom class in case the day is the current day
 		let today = new Date();
-		return date.getFullYear() === today.getFullYear() &&
+		if (
+			date.getFullYear() === today.getFullYear() &&
 			date.getMonth() === today.getMonth() &&
 			date.getDate() === today.getDate()
-			? 'oz-calendar-plugin-today'
-			: '';
+		) {
+			classes.push('oz-calendar-plugin-today');
+		}
+		if (view === 'month' && plugin.settings.dailyNotesEnabled && getPeriodicNote(plugin, 'daily', date)) {
+			classes.push('oz-calendar-day-has-daily-note');
+		}
+		return classes;
 	};
 
 	const fixedCalendarClass = plugin.settings.fixedCalendar ? 'fixed' : '';
@@ -119,11 +126,11 @@ export default function MyCalendar(params: { plugin: OZCalendarPlugin }) {
 				plugin,
 				new Date(activeStartDate.getFullYear(), activeStartDate.getMonth(), 1 + index * 7)
 			);
-			const weeklyNote = getWeeklyNote(plugin, weekDate);
+			const weeklyNote = getPeriodicNote(plugin, 'weekly', weekDate);
 			weekNumberEl.toggleClass('oz-calendar-week-has-note', weeklyNote !== null);
 			weekNumberEl.setAttribute(
 				'aria-label',
-				(weeklyNote ? 'Open weekly note ' : 'Create weekly note ') + getWeeklyNoteName(plugin, weekDate)
+				(weeklyNote ? 'Open weekly note ' : 'Create weekly note ') + getPeriodicNoteName(plugin, 'weekly', weekDate)
 			);
 		});
 	});
@@ -138,7 +145,8 @@ export default function MyCalendar(params: { plugin: OZCalendarPlugin }) {
 				showWeekNumbers={plugin.settings.showWeekNumbers}
 				onClickWeekNumber={
 					plugin.settings.weeklyNotesEnabled
-						? (weekNumber, date, event) => openWeeklyNote(plugin, date, !!Keymap.isModEvent(event.nativeEvent))
+						? (weekNumber, date, event) =>
+								openPeriodicNote(plugin, 'weekly', date, !!Keymap.isModEvent(event.nativeEvent))
 						: undefined
 				}
 				view="month"
