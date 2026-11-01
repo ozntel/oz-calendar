@@ -1,14 +1,15 @@
 import React, { useMemo } from 'react';
-import { BsArrowRight, BsArrowLeft } from 'react-icons/bs';
+import { BsArrowRight, BsArrowLeft, BsCalendar2CheckFill, BsCalendar2Plus } from 'react-icons/bs';
 import { HiOutlineDocumentText } from 'react-icons/hi';
 import { RiPhoneFindLine, RiAddCircleLine } from 'react-icons/ri';
 import { MdToday } from 'react-icons/md';
 import dayjs from 'dayjs';
 import OZCalendarPlugin from 'main';
 import { isMouseEvent, openFile } from '../util/utils';
-import { Menu, TFile } from 'obsidian';
+import { Keymap, Menu, TFile } from 'obsidian';
 import { VIEW_TYPE } from 'view';
 import { OZNote } from 'types';
+import { getPeriodicNote, getPeriodicNoteName, openPeriodicNote } from '../util/periodicNotes';
 
 interface NoteListComponentParams {
 	selectedDay: Date;
@@ -58,12 +59,17 @@ export default function NoteListComponent(params: NoteListComponentParams) {
 		}
 	};
 
+	// The daily note is shown in the header with the selected date instead of the list
+	const dailyNote: TFile | null = useMemo(() => {
+		return plugin.settings.dailyNotesEnabled ? getPeriodicNote(plugin, 'daily', selectedDay) : null;
+	}, [selectedDay, forceValue]);
+
 	const selectedDayNotes: OZNote[] = useMemo(() => {
 		const selectedDayIso = dayjs(selectedDay).format('YYYY-MM-DD');
 		let sortedList: OZNote[] = [];
 		if (selectedDayIso in plugin.OZCALENDARDAYS_STATE) {
 			sortedList = plugin.OZCALENDARDAYS_STATE[selectedDayIso].filter(
-				(ozItem) => ozItem.type === 'note'
+				(ozItem) => ozItem.type === 'note' && ozItem.path !== dailyNote?.path
 			) as OZNote[];
 		}
 		sortedList = sortedList.sort((a, b) => {
@@ -72,7 +78,7 @@ export default function NoteListComponent(params: NoteListComponentParams) {
 			return a.displayName.localeCompare(b.displayName, 'en', { numeric: true });
 		});
 		return sortedList;
-	}, [selectedDay, forceValue]);
+	}, [selectedDay, forceValue, dailyNote]);
 
 	const triggerFileContextMenu = (e: React.MouseEvent | React.TouchEvent, filePath: string) => {
 		let abstractFile = plugin.app.vault.getAbstractFileByPath(filePath);
@@ -88,6 +94,8 @@ export default function NoteListComponent(params: NoteListComponentParams) {
 		}
 	};
 
+	const overflowClass = plugin.settings.fileNameOverflowBehaviour == 'hide' ? ' oz-calendar-overflow-hide' : '';
+
 	return (
 		<>
 			<div className="oz-calendar-notelist-header-container">
@@ -97,12 +105,33 @@ export default function NoteListComponent(params: NoteListComponentParams) {
 				<div className="oz-calendar-nav-action-left">
 					<BsArrowLeft size={22} aria-label="Go to previous day" onClick={() => setNewSelectedDay(-1)} />
 				</div>
-				<div
-					className="oz-calendar-nav-action-middle"
-					aria-label="Show active date on calendar"
-					onClick={() => setActiveStartDate(selectedDay)}>
-					{plugin.formatDate(selectedDay, 'DD MMM YYYY')}
-				</div>
+				{plugin.settings.dailyNotesEnabled ? (
+					<div
+						className={
+							'oz-calendar-nav-action-middle oz-calendar-daily-note-date ' +
+							(dailyNote ? 'oz-calendar-daily-note-exists' : 'oz-calendar-daily-note-missing')
+						}
+						aria-label={
+							(dailyNote ? 'Open daily note ' : 'Create daily note ') +
+							getPeriodicNoteName(plugin, 'daily', selectedDay)
+						}
+						onClick={(e) => openPeriodicNote(plugin, 'daily', selectedDay, !!Keymap.isModEvent(e.nativeEvent))}
+						onContextMenu={(e) => dailyNote && triggerFileContextMenu(e, dailyNote.path)}>
+						{dailyNote ? (
+							<BsCalendar2CheckFill className="oz-calendar-daily-note-icon" />
+						) : (
+							<BsCalendar2Plus className="oz-calendar-daily-note-icon" />
+						)}
+						<span>{plugin.formatDate(selectedDay, 'DD MMM YYYY')}</span>
+					</div>
+				) : (
+					<div
+						className="oz-calendar-nav-action-middle"
+						aria-label="Show active date on calendar"
+						onClick={() => setActiveStartDate(selectedDay)}>
+						{plugin.formatDate(selectedDay, 'DD MMM YYYY')}
+					</div>
+				)}
 				<div className="oz-calendar-nav-action-right">
 					<BsArrowRight size={22} aria-label="Go to next day" onClick={() => setNewSelectedDay(1)} />
 				</div>
@@ -131,12 +160,7 @@ export default function NoteListComponent(params: NoteListComponentParams) {
 				{selectedDayNotes.map((ozNote) => {
 					return (
 						<div
-							className={
-								'oz-calendar-note-line' +
-								(plugin.settings.fileNameOverflowBehaviour == 'hide'
-									? ' oz-calendar-overflow-hide'
-									: '')
-							}
+							className={'oz-calendar-note-line' + overflowClass}
 							id={ozNote.path}
 							key={ozNote.path}
 							onClick={(e) => openFilePath(e, ozNote.path)}

@@ -1,27 +1,25 @@
 import OZCalendarPlugin from 'main';
-import { Modal, TFolder, Notice } from 'obsidian';
+import { Modal, TFile, TFolder, Notice, normalizePath } from 'obsidian';
 import { openFile } from './util/utils';
 import { createNoteFromTemplate } from './util/templates';
 import { FolderSuggest } from 'settings/suggestor';
-import { getStartOfWeek, getWeeklyNoteName, getWeeklyNotesFolder } from './util/weeklyNotes';
+import { getNewNoteFrontmatter } from './util/periodicNotes';
 
 export class CreateNoteModal extends Modal {
 	plugin: OZCalendarPlugin;
 	destinationDate: Date;
-	weekly: boolean;
 
-	constructor(plugin: OZCalendarPlugin, destinationDate: Date, options?: { weekly?: boolean }) {
+	constructor(plugin: OZCalendarPlugin, destinationDate: Date) {
 		super(plugin.app);
 		this.plugin = plugin;
 		this.destinationDate = destinationDate;
-		this.weekly = options?.weekly ?? false;
 	}
 
 	onOpen(): void {
 		let { contentEl } = this;
 		let thisModal = this;
 
-		const headerEl = contentEl.createEl('div', { text: this.weekly ? 'Create Weekly Note' : 'Create Note' });
+		const headerEl = contentEl.createEl('div', { text: 'Create Note' });
 		headerEl.addClass('modal-title');
 
 		// Input El
@@ -29,9 +27,7 @@ export class CreateNoteModal extends Modal {
 		const fileNameInputEl = contentEl.createEl('input', { cls: 'oz-calendar-modal-inputel' });
 
 		let defFileNamePref = this.plugin.settings.defaultFileNamePrefix;
-		if (this.weekly) {
-			fileNameInputEl.value = getWeeklyNoteName(this.plugin, this.destinationDate);
-		} else if (defFileNamePref !== '') {
+		if (defFileNamePref !== '') {
 			fileNameInputEl.value = this.plugin.formatDate(this.destinationDate, defFileNamePref) + ' ';
 		}
 
@@ -39,7 +35,7 @@ export class CreateNoteModal extends Modal {
 
 		// Folder Select
 		let folderInputEl: HTMLInputElement = null;
-		const defaultFolder = this.weekly ? getWeeklyNotesFolder(this.plugin) : this.plugin.settings.defaultFolder;
+		const defaultFolder = this.plugin.settings.defaultFolder;
 		if (this.plugin.settings.showDestinationFolderDuringCreate) {
 			contentEl.createEl('p', { text: 'Destination Folder:' });
 			folderInputEl = contentEl.createEl('input', { cls: 'oz-calendar-modal-inputel' });
@@ -85,21 +81,25 @@ export class CreateNoteModal extends Modal {
 				return;
 			}
 
-			// Date YAML for the new note. Weekly notes don't get it, so they don't show up on a day
-			const { yamlKey, dateFormat, dateSource } = this.plugin.settings;
-			const frontmatter =
-				!this.weekly && dateSource === 'yaml'
-					? { [yamlKey]: this.plugin.formatDate(this.destinationDate, dateFormat) }
-					: undefined;
+			// Open the note if it already exists, e.g. a note without a title that is named like the daily note,
+			// instead of creating a numbered copy of it
+			const existingFile = this.app.vault.getAbstractFileByPath(
+				normalizePath(defFolder.path === '/' ? `${newFileName}.md` : `${defFolder.path}/${newFileName}.md`)
+			);
+			if (existingFile instanceof TFile) {
+				openFile({ file: existingFile, plugin: this.plugin, newLeaf: false });
+				thisModal.close();
+				return;
+			}
 
 			// Create the MD File, open it and close the modal
 			const newFile = await createNoteFromTemplate({
 				plugin: this.plugin,
 				folder: defFolder as TFolder,
 				fileName: newFileName,
-				date: this.weekly ? getStartOfWeek(this.plugin, this.destinationDate) : this.destinationDate,
-				templatePath: this.weekly ? this.plugin.settings.weeklyNoteTemplate : this.plugin.settings.dailyNoteTemplate,
-				frontmatter: frontmatter,
+				date: this.destinationDate,
+				templatePath: this.plugin.settings.newNoteTemplate,
+				frontmatter: getNewNoteFrontmatter(this.plugin, this.destinationDate),
 			});
 			openFile({ file: newFile, plugin: this.plugin, newLeaf: false });
 

@@ -60,7 +60,7 @@ You can define this in the plugin settings:
 
 ## Templates
 
-You can set a template file for the new notes (**New Note Template**) and for the weekly notes (**Weekly Note Template**) under the **Templates** section of the plugin settings. Which syntax is processed depends on whether the **Templater** plugin is enabled. The settings page shows which one applies to your vault and warns you if a template can't be fully processed.
+You can set a template file for the new notes (**New Note Template**), the daily notes (**Daily Note Template**) and the weekly notes (**Weekly Note Template**) under the **Templates** section of the plugin settings. Which syntax is processed depends on whether the **Templater** plugin is enabled. The settings page shows which one applies to your vault and warns you if a template can't be fully processed.
 
 | | `{{date}}`, `{{title}}`, `{{time}}`, `{{date:FORMAT}}` | `<% ... %>` Templater commands |
 | --- | --- | --- |
@@ -74,17 +74,40 @@ The `{{...}}` syntax is the same as the core **Templates** plugin, but it is fil
 -   If the **Templater** plugin is enabled, Templater commands (`<% ... %>`) are processed as well. Note that `tp.date.now()` is the current date. To use the date of the note, use `{{date}}` (it is replaced before Templater runs), e.g. `<% tp.date.now("YYYY-MM-DD", 7, "{{date}}", "YYYY-MM-DD") %>` for a week after the note date.
 -   If the date source is YAML, the YAML key with the date is added to the note's frontmatter, unless the template already has it.
 
-## Weekly Notes
+## Periodic Notes
+
+Daily and weekly notes are saved in the **Periodic Notes Folder**. Set a separate folder for them: then they can use the same date format as your other notes without mixing with them. If you leave it empty, the default folder of the new notes is used.
+
+```
+Notes/
+  261101 Meeting.md     ← regular note
+Periodic/
+  261101.md             ← daily note
+  2026-W44.md           ← weekly note
+```
+
+### Daily Notes
+
+Enable **Daily Notes** in the plugin settings:
+
+-   The selected date above the note list shows the daily note of that day: a filled icon and a solid underline if it exists, a plus icon and a dashed underline if it doesn't. Click the date to open the daily note, or to create it. Use **Cmd/Ctrl + Click** to open it in a new tab.
+-   Days with an existing daily note are underlined in the calendar. You can also open or create it from the right click menu of a day.
+-   **Daily Note Format**: leave it empty to use the **Default File Name Prefix Date Format** of the new notes, so a daily note is named like a new note without a title (e.g. `YYMMDD` → `261101`).
+-   **Daily Note Template**: optional template file, see [Templates](#templates). Leave it empty to use the **New Note Template**.
+
+If the date source is YAML, the YAML key with the date is added to new daily notes, so that they show up as dots on their days.
+
+### Weekly Notes
 
 Enable **Weekly Notes** and **Show Week Numbers** in the plugin settings to use the week numbers of the calendar:
 
 -   Click on a week number to open the weekly note of that week. If it doesn't exist yet, it will be created. Use **Cmd/Ctrl + Click** to open it in a new tab.
 -   Week numbers with an existing weekly note are shown bold and underlined.
 -   **Weekly Note Format**: leave it empty to use the format matching the Calendar Type (ISO 8601: `GGGG-[W]WW` → `2026-W44`, US: `gggg-[W]ww`).
--   **Weekly Notes Folder**: leave it empty to use the default folder of the new notes. If you set a separate folder, the weekly notes are not shown as dots on the days (you can change this with **Hide Weekly Notes from Days**).
+-   **Hide Weekly Notes from Days**: weekly notes in the Periodic Notes Folder are not shown as dots on the days, even if their name or YAML contains a date.
 -   **Weekly Note Template**: optional template file, see [Templates](#templates). `{{date}}` is the first day of the week.
 
-Commands: **Open This Week's Note**, **Open Previous Week's Note** and **Open Next Week's Note**.
+Commands: **Open Today's Note**, **Open Yesterday's Note**, **Open Tomorrow's Note**, **Open This Week's Note**, **Open Previous Week's Note** and **Open Next Week's Note**.
 
 ## Plugin Commands
 

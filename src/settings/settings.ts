@@ -1,7 +1,7 @@
 import OZCalendarPlugin from 'main';
 import { PluginSettingTab, App, Setting, debounce } from 'obsidian';
 import { FileSuggest, FolderSuggest } from 'settings/suggestor';
-import { getDefaultWeeklyNoteFormat } from '../util/weeklyNotes';
+import { getDefaultDailyNoteFormat, getDefaultWeeklyNoteFormat } from '../util/periodicNotes';
 import { checkTemplate, getTemplatesFolder, isTemplaterEnabled } from '../util/templates';
 
 export type OpenFileBehaviourType = 'new-tab' | 'new-tab-group' | 'current-tab' | 'obsidian-default';
@@ -19,7 +19,7 @@ export interface OZCalendarPluginSettings {
 	dateFormat: string;
 	defaultFolder: string;
 	defaultFileNamePrefix: string;
-	dailyNoteTemplate: string;
+	newNoteTemplate: string;
 	fixedCalendar: boolean;
 	showDestinationFolderDuringCreate: boolean;
 	allowSlashhDuringCreate: boolean;
@@ -30,9 +30,12 @@ export interface OZCalendarPluginSettings {
 	fileNameOverflowBehaviour: OverflowBehaviour;
 	showWeekNumbers: boolean;
 	useObsidianLanguage: boolean;
+	periodicNotesFolder: string;
+	dailyNotesEnabled: boolean;
+	dailyNoteFormat: string;
+	dailyNoteTemplate: string;
 	weeklyNotesEnabled: boolean;
 	weeklyNoteFormat: string;
-	weeklyNotesFolder: string;
 	weeklyNoteTemplate: string;
 	excludeWeeklyNotesFromDays: boolean;
 }
@@ -45,7 +48,7 @@ export const DEFAULT_SETTINGS: OZCalendarPluginSettings = {
 	dateFormat: 'YYYY-MM-DD HH:mm:ss',
 	defaultFolder: '/',
 	defaultFileNamePrefix: 'YYYY-MM-DD',
-	dailyNoteTemplate: '',
+	newNoteTemplate: '',
 	fixedCalendar: true,
 	showDestinationFolderDuringCreate: true,
 	allowSlashhDuringCreate: false,
@@ -56,9 +59,12 @@ export const DEFAULT_SETTINGS: OZCalendarPluginSettings = {
 	fileNameOverflowBehaviour: 'hide',
 	showWeekNumbers: false,
 	useObsidianLanguage: true,
+	periodicNotesFolder: '',
+	dailyNotesEnabled: false,
+	dailyNoteFormat: '',
+	dailyNoteTemplate: '',
 	weeklyNotesEnabled: false,
 	weeklyNoteFormat: '',
-	weeklyNotesFolder: '',
 	weeklyNoteTemplate: '',
 	excludeWeeklyNotesFromDays: true,
 };
@@ -353,7 +359,63 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 				});
 			});
 
-		containerEl.createEl('h2', { text: 'Weekly Notes Settings' });
+		containerEl.createEl('h2', { text: 'Periodic Notes Settings' });
+
+		// Rescan the vault since the folder and formats decide which notes are excluded from the days
+		const updatePeriodicNotes = () => {
+			this.plugin.saveSettings();
+			this.plugin.OZCALENDARDAYS_STATE = this.plugin.getNotesWithDates();
+			this.plugin.calendarForceUpdate();
+		};
+
+		new Setting(containerEl)
+			.setName('Periodic Notes Folder')
+			.setDesc(
+				`Folder of the daily and weekly notes. Set a separate folder, so that the periodic notes can use the
+                same date format as your other notes without mixing with them. Leave empty to use the Default
+                Folder Location of the new notes.`
+			)
+			.addSearch((cb) => {
+				new FolderSuggest(this.app, cb.inputEl);
+				cb.setPlaceholder(this.plugin.settings.defaultFolder)
+					.setValue(this.plugin.settings.periodicNotesFolder)
+					.onChange((newFolder) => {
+						this.plugin.settings.periodicNotesFolder = newFolder;
+						updatePeriodicNotes();
+					});
+			});
+
+		containerEl.createEl('h3', { text: 'Daily Notes' });
+
+		new Setting(containerEl)
+			.setName('Enable Daily Notes')
+			.setDesc(
+				`Show the daily note of the selected day on top of the note list, or a line to create it if it
+                doesn't exist yet. Days with an existing daily note are highlighted in the calendar.`
+			)
+			.addToggle((toggle) => {
+				toggle.setValue(this.plugin.settings.dailyNotesEnabled).onChange((newValue) => {
+					this.plugin.settings.dailyNotesEnabled = newValue;
+					updatePeriodicNotes();
+				});
+			});
+
+		new Setting(containerEl)
+			.setName('Daily Note Format')
+			.setDesc(
+				`File name format of the daily notes. Leave empty to use the Default File Name Prefix Date Format
+                of the new notes.`
+			)
+			.addText((text) => {
+				text.setPlaceholder(getDefaultDailyNoteFormat(this.plugin))
+					.setValue(this.plugin.settings.dailyNoteFormat)
+					.onChange((newValue) => {
+						this.plugin.settings.dailyNoteFormat = newValue.trim();
+						updatePeriodicNotes();
+					});
+			});
+
+		containerEl.createEl('h3', { text: 'Weekly Notes' });
 
 		new Setting(containerEl)
 			.setName('Enable Weekly Notes')
@@ -365,9 +427,7 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 			.addToggle((toggle) => {
 				toggle.setValue(this.plugin.settings.weeklyNotesEnabled).onChange((newValue) => {
 					this.plugin.settings.weeklyNotesEnabled = newValue;
-					this.plugin.saveSettings();
-					this.plugin.OZCALENDARDAYS_STATE = this.plugin.getNotesWithDates();
-					this.plugin.calendarForceUpdate();
+					updatePeriodicNotes();
 				});
 			});
 
@@ -382,38 +442,20 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.weeklyNoteFormat)
 					.onChange((newValue) => {
 						this.plugin.settings.weeklyNoteFormat = newValue.trim();
-						this.plugin.saveSettings();
-						this.plugin.calendarForceUpdate();
-					});
-			});
-
-		new Setting(containerEl)
-			.setName('Weekly Notes Folder')
-			.setDesc('Folder of the weekly notes. Leave empty to use the Default Folder Location of the new notes.')
-			.addSearch((cb) => {
-				new FolderSuggest(this.app, cb.inputEl);
-				cb.setPlaceholder(this.plugin.settings.defaultFolder)
-					.setValue(this.plugin.settings.weeklyNotesFolder)
-					.onChange((newFolder) => {
-						this.plugin.settings.weeklyNotesFolder = newFolder;
-						this.plugin.saveSettings();
-						this.plugin.OZCALENDARDAYS_STATE = this.plugin.getNotesWithDates();
-						this.plugin.calendarForceUpdate();
+						updatePeriodicNotes();
 					});
 			});
 
 		new Setting(containerEl)
 			.setName('Hide Weekly Notes from Days')
 			.setDesc(
-				`Don't show the notes in the Weekly Notes Folder as dots on the days of the calendar.
-                Only applies if a separate Weekly Notes Folder is set.`
+				`Don't show the weekly notes in the Periodic Notes Folder as dots on the days of the calendar, in case
+                their name or YAML contains a date.`
 			)
 			.addToggle((toggle) => {
 				toggle.setValue(this.plugin.settings.excludeWeeklyNotesFromDays).onChange((newValue) => {
 					this.plugin.settings.excludeWeeklyNotesFromDays = newValue;
-					this.plugin.saveSettings();
-					this.plugin.OZCALENDARDAYS_STATE = this.plugin.getNotesWithDates();
-					this.plugin.calendarForceUpdate();
+					updatePeriodicNotes();
 				});
 			});
 
@@ -440,6 +482,14 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 		this.addTemplateSetting({
 			name: 'New Note Template',
 			desc: 'Optional template file for the notes created with the calendar.',
+			placeholder: 'Example: Templates/Note.md',
+			getValue: () => this.plugin.settings.newNoteTemplate,
+			setValue: (value) => (this.plugin.settings.newNoteTemplate = value),
+		});
+
+		this.addTemplateSetting({
+			name: 'Daily Note Template',
+			desc: 'Optional template file for the daily notes. Leave empty to use the New Note Template.',
 			placeholder: 'Example: Templates/Daily.md',
 			getValue: () => this.plugin.settings.dailyNoteTemplate,
 			setValue: (value) => (this.plugin.settings.dailyNoteTemplate = value),
