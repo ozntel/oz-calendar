@@ -181,8 +181,11 @@ settings:
 }
 
 .oz-calendar-nav-action-plus {
-	width: 10%;
-	display: inline-block;
+	width: 15%;
+	/* Flex keeps the icons in this slot (create + filter) on the same center line */
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
 	color: var(--text-muted);
 	vertical-align: top;
 	padding-top: 2px;
@@ -193,16 +196,20 @@ settings:
 	opacity: 0.6;
 }
 
+.oz-calendar-nav-action-today {
+	justify-content: flex-end;
+}
+
 .oz-calendar-nav-action-left {
 	display: inline-block;
-	width: 15%;
+	width: 12.5%;
 	color: var(--text-muted);
 	text-align: right;
 }
 
 .oz-calendar-nav-action-middle {
 	display: inline-block;
-	width: 50%;
+	width: 45%;
 	text-align: center;
 	vertical-align: top;
 	font-size: 1.1em;
@@ -212,7 +219,7 @@ settings:
 
 .oz-calendar-nav-action-right {
 	display: inline-block;
-	width: 15%;
+	width: 12.5%;
 	text-align: left;
 	color: var(--text-muted);
 }
@@ -432,4 +439,153 @@ settings:
 
 .oz-calendar-template-warning:empty {
 	display: none;
+}
+
+/* Filter bar between the file list header and the list */
+.oz-calendar-filter-bar {
+	margin-top: 6px;
+	padding: 4px;
+	border-radius: var(--radius-s, 4px);
+}
+
+.oz-calendar-filter-bar-active {
+	background-color: var(--background-secondary-alt);
+}
+
+.oz-calendar-filter-row {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+/* Filter syntax help window with clickable examples */
+.oz-calendar-filter-help-modal {
+	width: min(560px, 92vw);
+	font-size: var(--font-ui-small);
+}
+
+.oz-calendar-filter-help-intro {
+	margin-top: 0;
+	color: var(--text-muted);
+}
+
+.oz-calendar-filter-help-section + .oz-calendar-filter-help-section {
+	margin-top: 12px;
+}
+
+.oz-calendar-filter-help-title {
+	font-size: var(--font-ui-smaller);
+	margin-bottom: 4px;
+	font-weight: 600;
+	color: var(--text-muted);
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+.oz-calendar-filter-help-example {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	column-gap: 12px;
+	padding: 4px 6px;
+	border-radius: var(--radius-s, 4px);
+	cursor: pointer;
+}
+
+.oz-calendar-filter-help-example:hover {
+	background-color: var(--background-modifier-hover);
+}
+
+.oz-calendar-filter-help-example code {
+	flex-shrink: 0;
+	min-width: 13em;
+	color: var(--text-accent);
+}
+
+.oz-calendar-filter-help-example span {
+	color: var(--text-muted);
+}
+
+.oz-calendar-filter-help-note {
+	margin-top: 12px;
+	font-size: var(--font-ui-smaller);
+	color: var(--text-faint);
+}
+
+.oz-calendar-filter-input-container {
+	flex: 1;
+	min-width: 0;
+}
+
+/* Room for the info icon on the right, plus the clear button once there is text */
+.oz-calendar-filter-input-container input[type='search'] {
+	width: 100%;
+	font-size: var(--font-ui-small);
+	padding-inline-end: 30px;
+}
+
+.oz-calendar-filter-input-container input[type='search']:not(:placeholder-shown) {
+	padding-inline-end: 56px;
+}
+
+.oz-calendar-filter-help-button {
+	--icon-size: var(--icon-xs);
+	--icon-stroke: var(--icon-xs-stroke-width);
+	color: var(--text-faint);
+}
+
+.oz-calendar-filter-help-button:hover {
+	color: var(--text-normal);
+}
+
+.oz-calendar-filter-row button.oz-calendar-filter-apply {
+	flex-shrink: 0;
+	height: 26px;
+	padding: 0 10px;
+	font-size: var(--font-ui-small);
+}
+
+.oz-calendar-filter-row button.oz-calendar-filter-apply:disabled {
+	opacity: 0.5;
+	cursor: default;
+}
+
+.oz-calendar-filter-error {
+	margin-top: 4px;
+	font-size: var(--font-ui-smaller);
+	color: var(--text-error);
+}
+
+.oz-calendar-filter-error-help {
+	color: var(--text-accent);
+	cursor: pointer;
+}
+
+.oz-calendar-note-hidden-count {
+	margin-top: 6px;
+	font-size: 0.8em;
+	color: var(--text-muted);
+	text-align: center;
+}
+
+/* Filter toggle next to the create note button in the file list header */
+.oz-calendar-filter-toggle {
+	position: relative;
+	display: inline-flex;
+	cursor: pointer;
+	/* The funnel is drawn lower in its box (y 4-22) than the + circle (y 2-22); lift it to the same visual center */
+	transform: translateY(-1px);
+}
+
+/* Applied: small accent dot, visible even when the bar is closed */
+.oz-calendar-filter-toggle.is-applied::after {
+	content: '';
+	position: absolute;
+	top: -2px;
+	right: -3px;
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	background-color: var(--interactive-accent);
+	box-shadow: 0 0 0 1.5px var(--background-primary);
 }

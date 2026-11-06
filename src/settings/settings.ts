@@ -26,6 +26,8 @@ export interface OZCalendarPluginSettings {
 	openFileBehaviour: OpenFileBehaviourType;
 	sortingOption: SortingOption;
 	badgeProperty: string;
+	showFilterBar: boolean;
+	filterQuery: string;
 	newNoteDate: NewNoteDateType;
 	newNoteCancelButtonReverse: boolean;
 	fileNameOverflowBehaviour: OverflowBehaviour;
@@ -56,6 +58,8 @@ export const DEFAULT_SETTINGS: OZCalendarPluginSettings = {
 	openFileBehaviour: 'current-tab',
 	sortingOption: 'name',
 	badgeProperty: '',
+	showFilterBar: false,
+	filterQuery: '',
 	newNoteDate: 'current-date',
 	newNoteCancelButtonReverse: false,
 	fileNameOverflowBehaviour: 'hide',

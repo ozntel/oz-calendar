@@ -17,6 +17,8 @@ import {
 	openPeriodicNote,
 } from './util/periodicNotes';
 import { findDateCandidates } from './util/utils';
+import { CompiledFilter } from './util/filterQuery';
+import { loadFilterQuery } from './util/noteFilter';
 
 // Obsidian's bundled moment follows the language set in Obsidian
 const obsidianMoment = moment as unknown as typeof import('moment');
@@ -26,6 +28,8 @@ export default class OZCalendarPlugin extends Plugin {
 	dayjs = dayjs;
 	OZCALENDARDAYS_STATE: OZCalendarDaysMap = {};
 	initialScanCompleted: boolean = false;
+	// Compiled version of settings.filterQuery, null when there is no filter
+	noteFilter: CompiledFilter | null = null;
 	EVENT_TYPES = {
 		forceUpdate: 'ozCalendarForceUpdate',
 		changeDate: 'ozCalendarChangeDate',
@@ -44,6 +48,7 @@ export default class OZCalendarPlugin extends Plugin {
 		// Load Settings
 		this.addSettingTab(new OZCalendarPluginSettingsTab(this.app, this));
 		await this.loadSettings();
+		loadFilterQuery(this);
 
 		this.registerView(VIEW_TYPE, (leaf) => {
 			return new OZCalendarView(leaf, this);
@@ -69,6 +74,12 @@ export default class OZCalendarPlugin extends Plugin {
 		this.registerEvent(this.app.vault.on('rename', this.handleRename));
 		this.registerEvent(this.app.vault.on('delete', this.handleDelete));
 		this.registerEvent(this.app.vault.on('create', this.handleCreate));
+
+		this.addCommand({
+			id: 'oz-calendar-toggle-filter-bar',
+			name: 'Toggle Filter Bar',
+			callback: () => this.toggleFilterBar(),
+		});
 
 		this.addCommand({
 			id: 'oz-calendar-next-day',
@@ -274,6 +285,16 @@ export default class OZCalendarPlugin extends Plugin {
 				detail: {},
 			})
 		);
+	};
+
+	// Set when the bar is opened by the user, so the input takes focus once (not when it is restored on startup)
+	focusFilterOnOpen: boolean = false;
+
+	toggleFilterBar = () => {
+		this.settings.showFilterBar = !this.settings.showFilterBar;
+		this.focusFilterOnOpen = this.settings.showFilterBar;
+		this.saveSettings();
+		this.calendarForceUpdate();
 	};
 
 	/* ------------ HANDLE VAULT CHANGES - LISTENER FUNCTIONS ------------ */
