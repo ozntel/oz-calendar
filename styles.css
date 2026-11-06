@@ -390,6 +390,41 @@ settings:
 	white-space: nowrap;
 }
 
+/* In "hide" mode, truncate only the name so badges stay visible */
+.oz-calendar-note-line.oz-calendar-overflow-hide {
+	display: flex;
+	align-items: center;
+}
+
+.oz-calendar-overflow-hide .oz-calendar-note-line-icon,
+.oz-calendar-overflow-hide .oz-calendar-note-badge {
+	flex-shrink: 0;
+}
+
+.oz-calendar-overflow-hide .oz-calendar-note-line-name {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.oz-calendar-note-badge {
+	display: inline-block;
+	margin-left: 6px;
+	padding: 0 6px;
+	border-radius: var(--radius-s, 4px);
+	font-size: 0.8em;
+	line-height: 1.5;
+	white-space: nowrap;
+	vertical-align: middle;
+	background-color: hsla(var(--oz-badge-hue), 70%, 50%, 0.16);
+	color: hsl(var(--oz-badge-hue), 60%, 32%);
+}
+
+.theme-dark .oz-calendar-note-badge {
+	background-color: hsla(var(--oz-badge-hue), 70%, 60%, 0.2);
+	color: hsl(var(--oz-badge-hue), 75%, 75%);
+}
+
 .oz-calendar-template-warning {
 	color: var(--text-warning);
 	margin-top: 4px;

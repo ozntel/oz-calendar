@@ -25,6 +25,7 @@ export interface OZCalendarPluginSettings {
 	allowSlashhDuringCreate: boolean;
 	openFileBehaviour: OpenFileBehaviourType;
 	sortingOption: SortingOption;
+	badgeProperty: string;
 	newNoteDate: NewNoteDateType;
 	newNoteCancelButtonReverse: boolean;
 	fileNameOverflowBehaviour: OverflowBehaviour;
@@ -54,6 +55,7 @@ export const DEFAULT_SETTINGS: OZCalendarPluginSettings = {
 	allowSlashhDuringCreate: false,
 	openFileBehaviour: 'current-tab',
 	sortingOption: 'name',
+	badgeProperty: '',
 	newNoteDate: 'current-date',
 	newNoteCancelButtonReverse: false,
 	fileNameOverflowBehaviour: 'hide',
@@ -191,6 +193,22 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.sortingOption)
 					.onChange((newValue: SortingOption) => {
 						this.plugin.settings.sortingOption = newValue;
+						this.plugin.saveSettings();
+						this.plugin.calendarForceUpdate();
+					});
+			});
+
+		new Setting(containerEl)
+			.setName('File List Badge Property')
+			.setDesc(
+				`Frontmatter (YAML) key whose value is shown as a colored badge next to each note in the file list,
+                e.g. "type" or "category". Leave empty to hide badges.`
+			)
+			.addText((text) => {
+				text.setPlaceholder('type')
+					.setValue(this.plugin.settings.badgeProperty)
+					.onChange((newValue) => {
+						this.plugin.settings.badgeProperty = newValue.trim();
 						this.plugin.saveSettings();
 						this.plugin.calendarForceUpdate();
 					});

@@ -96,6 +96,34 @@ export default function NoteListComponent(params: NoteListComponentParams) {
 
 	const overflowClass = plugin.settings.fileNameOverflowBehaviour == 'hide' ? ' oz-calendar-overflow-hide' : '';
 
+	const badgeProperty = plugin.settings.badgeProperty;
+
+	// Read the configured frontmatter key and turn its value into a list of badge labels
+	const getBadgeValues = (filePath: string): string[] => {
+		if (!badgeProperty) return [];
+		const fm = plugin.app.metadataCache.getCache(filePath)?.frontmatter;
+		if (!fm) return [];
+		const raw = fm[badgeProperty];
+		const items: unknown[] = Array.isArray(raw) ? raw : [raw];
+		const values = items
+			.filter((item) => ['string', 'number', 'boolean'].includes(typeof item))
+			.map((item) =>
+				String(item)
+					.replace(/^\[\[(?:[^\]|]*\|)?([^\]]*)\]\]$/, '$1') // [[link|alias]] -> alias
+					.replace(/^#/, '')
+					.trim()
+			)
+			.filter((value) => value.length > 0);
+		return Array.from(new Set(values)).slice(0, 3);
+	};
+
+	// Stable hue per value, so the same value always gets the same color
+	const getBadgeHue = (value: string): number => {
+		let hash = 0;
+		for (let i = 0; i < value.length; i++) hash = (hash * 31 + value.charCodeAt(i)) | 0;
+		return Math.abs(hash) % 360;
+	};
+
 	return (
 		<>
 			<div className="oz-calendar-notelist-header-container">
@@ -166,7 +194,16 @@ export default function NoteListComponent(params: NoteListComponentParams) {
 							onClick={(e) => openFilePath(e, ozNote.path)}
 							onContextMenu={(e) => triggerFileContextMenu(e, ozNote.path)}>
 							<HiOutlineDocumentText className="oz-calendar-note-line-icon" />
-							<span>{ozNote.displayName}</span>
+							<span className="oz-calendar-note-line-name">{ozNote.displayName}</span>
+							{getBadgeValues(ozNote.path).map((value) => (
+								<span
+									key={value}
+									className="oz-calendar-note-badge"
+									style={{ '--oz-badge-hue': getBadgeHue(value.toLowerCase()) } as React.CSSProperties}
+									aria-label={`${badgeProperty}: ${value}`}>
+									{value}
+								</span>
+							))}
 						</div>
 					);
 				})}
