@@ -109,6 +109,31 @@ Enable **Weekly Notes** and **Show Week Numbers** in the plugin settings to use 
 
 Commands: **Open Today's Note**, **Open Yesterday's Note**, **Open Tomorrow's Note**, **Open This Week's Note**, **Open Previous Week's Note** and **Open Next Week's Note**.
 
+## File List Badges
+
+Set **File List Badge Property** in the plugin settings to a frontmatter key, e.g. `type`, to see its value as a colored badge next to each note in the file list. This way you can tell at a glance what kind of notes were created on a day.
+
+-   Each value always gets the same color, e.g. every `meeting` badge looks the same.
+-   List values show a badge per item (up to 3), and `[[Link|Alias]]` shows as `Alias`.
+-   Leave the setting empty to hide the badges.
+
+## Filter Notes
+
+Click the funnel icon next to the create note button to open the filter bar, or use the **Toggle Filter Bar** command. Write a query like in Obsidian Search and press **Apply** or **Enter**: the calendar dots and the file list then only show matching notes. The filter is kept when you close the bar, and the funnel icon shows a dot while a filter is applied.
+
+| Query | Shows notes where |
+| --- | --- |
+| `meeting`, `"weekly review"` | the file name contains the word or the exact phrase |
+| `file:standup`, `path:Work/` | the file name / file path contains the text |
+| `tag:#work` | the note has `#work` or a nested tag like `#work/client` |
+| `[status]` | the `status` property exists |
+| `[type:meeting]`, `[type:"1:1"]` | the `type` property contains the value (any item, for list properties) |
+| `[due:null]` | the `due` property exists but is empty |
+| `/regex/`, `file:/^2024-/` | the regular expression matches |
+| `a b`, `a OR b`, `-a`, `(a OR b) -c` | both match, either matches, not, grouping |
+
+Matching ignores case. Note content is not searched. Click the info icon in the filter field to see these examples and add them to your filter with a click.
+
 ## Plugin Commands
 
 ### Day Navigation
@@ -118,6 +143,10 @@ You can use directly **Go to Previous Day**, **Go to Next Day** and **Go to Toda
 ### New Note Creation
 
 You can use the **Create a New Note** command to trigger the create a new note action customized for the plugin. Same as day navigation, you can assign hotkey to this command for easy keyboard navigation.
+
+### Filter
+
+You can use the **Toggle Filter Bar** command to show or hide the filter bar, see [Filter Notes](#filter-notes).
 
 ## Style Settings Plugin Support
 
