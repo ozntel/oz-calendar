@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { BsArrowRight, BsArrowLeft, BsCalendar2CheckFill, BsCalendar2Plus } from 'react-icons/bs';
 import { HiOutlineDocumentText } from 'react-icons/hi';
-import { RiPhoneFindLine, RiAddCircleLine } from 'react-icons/ri';
+import { RiPhoneFindLine, RiAddCircleLine, RiFilterLine, RiFilterOffLine } from 'react-icons/ri';
 import { MdToday } from 'react-icons/md';
 import dayjs from 'dayjs';
 import OZCalendarPlugin from 'main';
@@ -10,6 +10,9 @@ import { Keymap, Menu, TFile } from 'obsidian';
 import { VIEW_TYPE } from 'view';
 import { OZNote } from 'types';
 import { getPeriodicNote, getPeriodicNoteName, openPeriodicNote } from '../util/periodicNotes';
+import { getBadgeHue, getBadgeValues } from '../util/badges';
+import { isItemVisible } from '../util/noteFilter';
+import FilterBar from './filterBar';
 
 interface NoteListComponentParams {
 	selectedDay: Date;
@@ -96,11 +99,29 @@ export default function NoteListComponent(params: NoteListComponentParams) {
 
 	const overflowClass = plugin.settings.fileNameOverflowBehaviour == 'hide' ? ' oz-calendar-overflow-hide' : '';
 
+	const badgeProperty = plugin.settings.badgeProperty;
+	const visibleNotes = selectedDayNotes.filter((ozNote) => isItemVisible(plugin, ozNote));
+	const hiddenCount = selectedDayNotes.length - visibleNotes.length;
+
 	return (
 		<>
 			<div className="oz-calendar-notelist-header-container">
 				<div className="oz-calendar-nav-action-plus">
 					<RiAddCircleLine size={20} aria-label="Create note for today" onClick={createNote} />
+					<span
+						className={
+							'oz-calendar-filter-toggle' +
+							(plugin.settings.showFilterBar ? ' is-open' : '') +
+							(plugin.noteFilter ? ' is-applied' : '')
+						}
+						aria-label={
+							(plugin.settings.showFilterBar ? 'Hide filter bar' : 'Show filter bar') +
+							(plugin.noteFilter ? ' (filter applied)' : '')
+						}
+						onClick={plugin.toggleFilterBar}>
+						{/* The icon shows the next action: funnel opens the bar, crossed-out funnel closes it */}
+						{plugin.settings.showFilterBar ? <RiFilterOffLine size={20} /> : <RiFilterLine size={20} />}
+					</span>
 				</div>
 				<div className="oz-calendar-nav-action-left">
 					<BsArrowLeft size={22} aria-label="Go to previous day" onClick={() => setNewSelectedDay(-1)} />
@@ -135,7 +156,7 @@ export default function NoteListComponent(params: NoteListComponentParams) {
 				<div className="oz-calendar-nav-action-right">
 					<BsArrowRight size={22} aria-label="Go to next day" onClick={() => setNewSelectedDay(1)} />
 				</div>
-				<div className="oz-calendar-nav-action-plus">
+				<div className="oz-calendar-nav-action-plus oz-calendar-nav-action-today">
 					<MdToday
 						size={20}
 						aria-label="Set today as selected day"
@@ -146,18 +167,19 @@ export default function NoteListComponent(params: NoteListComponentParams) {
 					/>
 				</div>
 			</div>
+			{plugin.settings.showFilterBar && <FilterBar plugin={plugin} />}
 			<div
 				className={
 					'oz-calendar-notelist-container ' +
 					(plugin.settings.fileNameOverflowBehaviour == 'scroll' ? 'oz-calendar-overflow-scroll' : '')
 				}>
-				{selectedDayNotes.length === 0 && (
+				{visibleNotes.length === 0 && (
 					<div className="oz-calendar-note-no-note">
 						<RiPhoneFindLine className="oz-calendar-no-note-icon" />
-						No note found
+						{hiddenCount > 0 ? `No matching notes (${hiddenCount} hidden)` : 'No note found'}
 					</div>
 				)}
-				{selectedDayNotes.map((ozNote) => {
+				{visibleNotes.map((ozNote) => {
 					return (
 						<div
 							className={'oz-calendar-note-line' + overflowClass}
@@ -166,10 +188,22 @@ export default function NoteListComponent(params: NoteListComponentParams) {
 							onClick={(e) => openFilePath(e, ozNote.path)}
 							onContextMenu={(e) => triggerFileContextMenu(e, ozNote.path)}>
 							<HiOutlineDocumentText className="oz-calendar-note-line-icon" />
-							<span>{ozNote.displayName}</span>
+							<span className="oz-calendar-note-line-name">{ozNote.displayName}</span>
+							{getBadgeValues(plugin, ozNote.path).map((value) => (
+								<span
+									key={value}
+									className="oz-calendar-note-badge"
+									style={{ '--oz-badge-hue': getBadgeHue(value) } as React.CSSProperties}
+									aria-label={`${badgeProperty}: ${value}`}>
+									{value}
+								</span>
+							))}
 						</div>
 					);
 				})}
+				{visibleNotes.length > 0 && hiddenCount > 0 && (
+					<div className="oz-calendar-note-hidden-count">{hiddenCount} hidden by filter</div>
+				)}
 			</div>
 		</>
 	);

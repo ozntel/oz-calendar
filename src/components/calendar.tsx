@@ -9,6 +9,7 @@ import { DayChangeCommandAction } from 'types';
 import { CreateNoteModal } from 'modal';
 import { Keymap, moment } from 'obsidian';
 import { getPeriodicNote, getPeriodicNoteName, getStartOfWeek, openPeriodicNote } from '../util/periodicNotes';
+import { isItemVisible } from '../util/noteFilter';
 
 export default function MyCalendar(params: { plugin: OZCalendarPlugin }) {
 	const { plugin } = params;
@@ -75,7 +76,9 @@ export default function MyCalendar(params: { plugin: OZCalendarPlugin }) {
 		if (view === 'month') {
 			const dateString = dayjs(date).format('YYYY-MM-DD');
 			let dotsCount =
-				dateString in plugin.OZCALENDARDAYS_STATE ? plugin.OZCALENDARDAYS_STATE[dateString].length : 0;
+				dateString in plugin.OZCALENDARDAYS_STATE
+					? plugin.OZCALENDARDAYS_STATE[dateString].filter((item) => isItemVisible(plugin, item)).length
+					: 0;
 			return (
 				<div className="dots-wrapper">
 					{[...Array(Math.min(dotsCount, 2))].map((_, index) => (

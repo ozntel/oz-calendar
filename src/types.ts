@@ -12,7 +12,7 @@ export type OZReminder = {
 	date: string;
 };
 
-type OZItem = OZNote | OZReminder;
+export type OZItem = OZNote | OZReminder;
 
 export interface OZCalendarDaysMap {
 	[key: string]: OZItem[];
